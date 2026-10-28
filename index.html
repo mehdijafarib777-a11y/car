@@ -1,4 +1,4 @@
-<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="پایش خودرو"><meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#1a1f1c" media="(prefers-color-scheme: dark)"><meta name="robots" content="noindex"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./icons/apple-touch-icon.png"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style><script>/* Standalone (home-screen) build: provides the same claude.use() API the page uses inside Claude,
+<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><meta name="apple-mobile-web-app-title" content="پایش خودرو"><meta name="theme-color" content="#0a0e14"><meta name="robots" content="noindex"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./icons/apple-touch-icon.png"><style>:root{color-scheme:dark;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style><script>/* Standalone (home-screen) build: provides the same claude.use() API the page uses inside Claude,
    backed by this phone's own storage. Data never leaves the device. */
 (function () {
   var KEY = 'car-monitoring-db-v1';
@@ -122,27 +122,21 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800&display=swap">
 <style>
 /* Layout: one phone-width column (max 560px, centred on larger screens); compact sticky header, fixed bottom tab bar with a raised "add" button; every section stacks in one column. */
+/* Night dashboard: deliberately one dark look in every theme (instrument-cluster feel). Amber = action/needle, cyan = data. */
 :root{
-  --bg:#f2f3f0; --surface:#ffffff; --surface-2:#e8eae5; --ink:#18201c; --muted:#58635d; --line:#d4d9d1;
-  --accent:#33369c; --accent-ink:#ffffff; --accent-soft:#e6e6f6;
-  --good:#1b7443; --good-soft:#e1f1e7; --warn:#9a5b00; --warn-soft:#fbefd9; --bad:#b0251d; --bad-soft:#fbe4e1;
-  --v1:#2a78d6; --v2:#eb6834; --v3:#1baf7a; --v4:#eda100; --v5:#e87ba4; --v6:#008300; --v7:#6250d6; --v8:#e34948;
+  --bg:#0a0e14; --surface:#121925; --surface-2:#1a2332; --ink:#eaf0f7; --muted:#8d9aac; --line:#243045;
+  --accent:#ffb627; --accent-ink:#1d1300; --accent-soft:rgba(255,182,39,.14); --cyan:#3fd3ff; --cyan-soft:rgba(63,211,255,.14);
+  --good:#3ddc97; --good-soft:rgba(61,220,151,.14); --warn:#ffb627; --warn-soft:rgba(255,182,39,.14); --bad:#ff5d6c; --bad-soft:rgba(255,93,108,.15);
+  --v1:#3fd3ff; --v2:#ff8a3d; --v3:#3ddc97; --v4:#ffd166; --v5:#f472b6; --v6:#a3e635; --v7:#a78bfa; --v8:#ff5d6c; --v9:#22d3ee; --v10:#fb923c; --v11:#4ade80; --v12:#facc15;
+  --glass:rgba(14,20,30,.86);
   --font:"Vazirmatn",Tahoma,"Segoe UI",system-ui,sans-serif;
-  --r:14px; --col:560px; --navh:64px;
+  --r:16px; --col:560px; --navh:64px;
+  --tread:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='14' viewBox='0 0 16 14'%3E%3Cpath d='M1 1l7 5 7-5v4l-7 5-7-5z' fill='%23ffb627'/%3E%3C/svg%3E");
+  --tread-dim:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='14' viewBox='0 0 16 14'%3E%3Cpath d='M1 1l7 5 7-5v4l-7 5-7-5z' fill='%23ffffff' fill-opacity='.10'/%3E%3C/svg%3E");
+  color-scheme:dark;
 }
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#121614; --surface:#1a1f1c; --surface-2:#232a26; --ink:#e8ece9; --muted:#a2aca6; --line:#323a35;
-  --accent:#aeadf3; --accent-ink:#17183f; --accent-soft:#272a4a;
-  --good:#63c48f; --good-soft:#1c3226; --warn:#e2a84d; --warn-soft:#3a2d14; --bad:#f08b83; --bad-soft:#3c1d1a;
-  --v1:#3987e5; --v2:#d95926; --v3:#199e70; --v4:#c98500; --v5:#d55181; --v6:#008300; --v7:#9085e9; --v8:#e66767;
-  color-scheme:dark}}
-:root[data-theme="dark"]{
-  --bg:#121614; --surface:#1a1f1c; --surface-2:#232a26; --ink:#e8ece9; --muted:#a2aca6; --line:#323a35;
-  --accent:#aeadf3; --accent-ink:#17183f; --accent-soft:#272a4a;
-  --good:#63c48f; --good-soft:#1c3226; --warn:#e2a84d; --warn-soft:#3a2d14; --bad:#f08b83; --bad-soft:#3c1d1a;
-  --v1:#3987e5; --v2:#d95926; --v3:#199e70; --v4:#c98500; --v5:#d55181; --v6:#008300; --v7:#9085e9; --v8:#e66767;
-  color-scheme:dark}
 html,body{background:var(--bg);color:var(--ink)}
+body{background:radial-gradient(120% 60% at 85% -10%,rgba(63,211,255,.10),transparent 60%),radial-gradient(90% 50% at 0% 0%,rgba(255,182,39,.08),transparent 55%),var(--bg);background-attachment:fixed}
 body{font-family:var(--font);font-size:15px;line-height:1.65;-webkit-tap-highlight-color:transparent}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
 *{box-sizing:border-box}
@@ -377,6 +371,104 @@ input[type=number],input[type=date]{direction:ltr;text-align:right}
 .toast.bad{background:var(--bad);color:#fff}
 .notice{background:var(--surface-2);border-radius:var(--r);padding:12px 14px;font-size:.88rem}
 @media (prefers-reduced-motion:no-preference){.btn,.seg button,.ev-main{transition:background .15s}}
+/* ===== v4 night dashboard ===== */
+body::before{background:var(--glass)}
+.top{background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.bottom{background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.bottom a[aria-current="page"]{color:var(--accent);text-shadow:0 0 12px rgba(255,182,39,.45)}
+.bottom a[aria-current="page"]::after{content:"";width:22px;height:7px;margin-top:1px;background:var(--tread) repeat-x;background-size:8px 7px;transform:rotate(90deg) scale(.0)}
+.bottom a[aria-current="page"] svg{filter:drop-shadow(0 0 6px rgba(255,182,39,.55))}
+.bottom a.fab span.ring{background:radial-gradient(circle at 35% 30%,#ffd27a,var(--accent) 60%);box-shadow:0 0 0 4px var(--bg),0 6px 22px rgba(255,182,39,.45);border:0}
+.panel,.vcard,.kpi,.evlist,.rcard{background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,0) 40%),var(--surface);border-color:var(--line);box-shadow:0 1px 0 rgba(255,255,255,.04) inset,0 10px 30px rgba(0,0,0,.25)}
+.panel>h3::before,.section-h>h3::before,.panel>.section-h>h3::before,.section>h3::before{content:"";display:inline-block;width:10px;height:16px;margin-inline-end:8px;vertical-align:-2px;background:var(--tread) repeat-y;background-size:10px 8px}
+.view-head h2{font-size:1.35rem;letter-spacing:-.01em}
+.view-head h2::after{content:"";display:block;height:8px;width:72px;margin-top:6px;background:var(--tread) repeat-x;background-size:9px 8px;opacity:.9}
+.btn{background:var(--surface-2);border-color:var(--line)}
+.btn.primary{background:linear-gradient(180deg,#ffc552,var(--accent));color:var(--accent-ink);border-color:transparent;box-shadow:0 6px 18px rgba(255,182,39,.28)}
+.btn.big{font-weight:800;letter-spacing:.01em}
+input,select,textarea{background:var(--surface-2);border-color:var(--line);color:var(--ink)}
+.seg{background:rgba(255,255,255,.04);border:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent);box-shadow:inset 0 0 0 1px rgba(255,182,39,.45)}
+.vswitch button{background:var(--surface-2);border-color:var(--line);color:var(--ink)}
+.vswitch button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent);border-color:rgba(255,182,39,.55)}
+.kmrow{background:linear-gradient(90deg,rgba(63,211,255,.08),rgba(63,211,255,.02));border:1px solid rgba(63,211,255,.18)}
+.kmrow .v{color:var(--cyan);text-shadow:0 0 14px rgba(63,211,255,.35);font-size:1.3rem}
+.toast{background:#f6f8fb;color:#0a0e14;overflow:hidden;padding-bottom:16px}
+.toast .tcar{position:absolute;bottom:2px;left:-50px;width:44px;height:18px}
+.toast .troad{position:absolute;left:0;right:0;bottom:3px;height:1px;background:repeating-linear-gradient(90deg,#c4cad3 0 8px,transparent 8px 14px)}
+.empty{border-color:var(--line);background:rgba(255,255,255,.02)}
+.chip.user{background:rgba(255,255,255,.07)}
+.issues.info{background:rgba(255,255,255,.05)}
+.loading{display:flex;flex-direction:column;align-items:center;gap:10px;padding:40px 0;color:var(--muted)}
+.loading .lroad{position:relative;width:220px;height:46px;overflow:hidden}
+.loading .lroad::after{content:"";position:absolute;left:0;right:0;bottom:6px;height:2px;background:repeating-linear-gradient(90deg,var(--accent) 0 14px,transparent 14px 26px)}
+.loading svg{position:absolute;bottom:8px;width:84px;left:-90px}
+
+/* vehicle hero */
+.hero{position:relative;height:150px;border-radius:14px;overflow:hidden;background:radial-gradient(80% 90% at 50% 100%,rgba(63,211,255,.16),transparent 70%),linear-gradient(180deg,#0e1520,#141d2b);border:1px solid var(--line)}
+.hero .stars{position:absolute;inset:0;background:radial-gradient(1px 1px at 20% 30%,rgba(255,255,255,.5),transparent),radial-gradient(1px 1px at 70% 20%,rgba(255,255,255,.35),transparent),radial-gradient(1px 1px at 85% 45%,rgba(255,255,255,.3),transparent),radial-gradient(1px 1px at 40% 15%,rgba(255,255,255,.3),transparent)}
+.hero .road{position:absolute;left:0;right:0;bottom:0;height:30px;background:linear-gradient(180deg,#1b2433,#121925)}
+.hero .road i{position:absolute;left:0;right:0;top:13px;height:3px;background:repeating-linear-gradient(90deg,rgba(255,182,39,.75) 0 22px,transparent 22px 40px);background-size:40px 3px}
+.hero .car{position:absolute;bottom:14px;left:50%;width:min(78%,300px);transform:translateX(-50%);filter:drop-shadow(0 10px 14px rgba(0,0,0,.55))}
+.hero .photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.hero .photo-fade{position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(10,14,20,.75))}
+.hero .tabs2{position:absolute;top:8px;inset-inline-end:8px;display:flex;gap:4px;background:rgba(0,0,0,.45);border-radius:999px;padding:3px}
+.hero .tabs2 button{font:inherit;font-size:.72rem;border:0;background:none;color:#cfd8e3;border-radius:999px;padding:2px 10px;cursor:pointer}
+.hero .tabs2 button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);font-weight:800}
+.hero .infer{position:absolute;top:8px;inset-inline-start:8px;font-size:.7rem;color:#cfd8e3;background:rgba(0,0,0,.45);border-radius:999px;padding:2px 10px;text-decoration:none}
+.anim .hero .car{animation:driveIn .75s cubic-bezier(.2,.8,.25,1) both}
+.anim .hero .road i{animation:lane .75s linear}
+.anim .hero .wheel{animation:spin .75s linear}
+@keyframes driveIn{from{transform:translateX(70%);opacity:0}to{transform:translateX(-50%);opacity:1}}
+@keyframes lane{from{background-position:0 0}to{background-position:-120px 0}}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(-720deg)}}
+.wheel{transform-box:fill-box;transform-origin:center}
+
+/* gauge */
+.gauge-wrap{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:10px;align-items:center}
+.gauge svg{width:100%;height:auto;display:block;direction:ltr}
+.gauge text{font-family:var(--font);fill:var(--muted);font-size:9px}
+
+/* charts v2 */
+.chart{position:relative}
+.chart svg{display:block;width:100%;height:auto;direction:ltr;touch-action:pan-y;overflow:visible}
+.chart text{fill:var(--muted);font-family:var(--font);font-size:10px}
+.chart .grid line{stroke:rgba(255,255,255,.07);stroke-dasharray:3 4}
+.chart .lbl{fill:var(--ink);font-weight:800;font-size:11px}
+.chart-read{min-height:1.6em;font-size:.86rem;color:var(--cyan)}
+.anim-chart .draw{stroke-dasharray:1;animation:draw .8s ease-out both}
+.anim-chart .fade{animation:fadein .6s ease-out both}
+.anim-chart .grow{transform-box:fill-box;transform-origin:50% 100%;animation:grow .55s cubic-bezier(.2,.8,.2,1) both}
+.anim-chart .ring{animation:ringin .7s ease-out both}
+@keyframes draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+@keyframes fadein{from{opacity:0}}
+@keyframes grow{from{transform:scaleY(0)}}
+@keyframes ringin{from{opacity:0;transform:rotate(-140deg) scale(.85)}to{opacity:1;transform:rotate(-90deg)}}
+.donut-ring{transform-box:view-box;transform-origin:90px 90px;transform:rotate(-90deg)}
+.hbars2{display:flex;flex-direction:column;gap:9px}
+.hbar2{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 10px;align-items:center;font-size:.85rem;cursor:pointer;border-radius:8px;padding:2px 4px}
+.hbar2[aria-pressed="true"]{background:rgba(255,255,255,.05)}
+.hbar2 .tr{grid-column:1/-1;height:12px;border-radius:6px;background:rgba(255,255,255,.06);overflow:hidden;display:flex;justify-content:flex-start}
+.hbar2 .fl{height:100%;border-radius:6px;box-shadow:0 0 12px rgba(63,211,255,.25)}
+.anim-chart .hbar2 .fl{transform-origin:right center;animation:growx .6s cubic-bezier(.2,.8,.2,1) both}
+@keyframes growx{from{transform:scaleX(0)}}
+.legend .val{color:var(--ink)}
+
+/* tire-track page transition */
+#tread{position:fixed;inset:0;z-index:50;pointer-events:none;display:flex;justify-content:space-around;padding:0 18%}
+#tread i{width:30px;height:100%;background:var(--tread) repeat-y;background-size:30px 26px;opacity:.85;transform:translateY(-105%);filter:drop-shadow(0 0 6px rgba(255,182,39,.5))}
+#tread.go i{animation:treadDown .5s cubic-bezier(.5,0,.3,1) forwards}
+#tread.go i:last-child{animation-delay:.04s}
+@keyframes treadDown{0%{transform:translateY(-105%)}100%{transform:translateY(105%)}}
+@media (prefers-reduced-motion:reduce){#tread{display:none}.anim .hero .car,.anim .hero .road i,.anim .hero .wheel,.anim-chart *{animation:none!important}.toast .tcar{display:none}}
+.no-motion #tread{display:none}.no-motion .anim .hero .car,.no-motion .anim .hero .road i,.no-motion .anim .hero .wheel,.no-motion .anim-chart *,.no-motion .toast .tcar{animation:none!important}
+.no-motion .toast .tcar{display:none}
+.swatches{display:flex;flex-wrap:wrap;gap:6px}
+.swatches label{width:30px;height:30px;border-radius:50%;border:2px solid var(--line);cursor:pointer;display:grid;place-items:center;padding:0;min-height:0;background:none}
+.swatches input{position:absolute;opacity:0;pointer-events:none}
+.swatches input:checked+span{outline:2px solid var(--accent);outline-offset:3px}
+.swatches span{width:22px;height:22px;border-radius:50%;display:block}
+
 </style>
 
 <div id="app" lang="fa" dir="rtl">
@@ -402,6 +494,7 @@ input[type=number],input[type=date]{direction:ltr;text-align:right}
   </nav>
 </div>
 <div id="sheet"></div>
+<div id="tread" aria-hidden="true"><i></i><i></i></div>
 <div id="tip" class="tip" hidden></div>
 <div id="toast" class="toast" hidden></div>
 
@@ -430,7 +523,7 @@ const S={db:null,assets:null,downloads:null,vehicles:{},events:{},rules:{},resea
   form:{type:'fuel',editId:null,confirm:false,issues:null},
   hist:{q:'',veh:'all',type:'all',from:'',to:'',sort:'date',dir:'desc',open:null,delAsk:null,showF:false},
   rep:{veh:null,range:'all',from:'',to:'',metric:'dist',ctype:'curve',sel:null},
-  fs:null,svcVeh:null,plateWarn:null,
+  fs:null,svcVeh:null,plateWarn:null,ch:{rep:{metric:'dist',type:'curve',sel:null,anim:true},dash:{metric:'cons',type:'curve',sel:null,anim:true}},heroAnim:true,photoDraft:{},
   ruleEdit:null,addRule:false,vehEdit:null};
 
 /* ---------- helpers ---------- */
@@ -459,7 +552,9 @@ function startOfMonth(){const t=new Date();if(cal()==='gregory')return iso(new D
 const uid=p=>p+'-'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const clone=o=>JSON.parse(JSON.stringify(o||{}));
 function pill(state,txt){const [k,label]=STATE_UI[state]||['neutral',state];return `<span class="pill ${k}">${ICON[k]}${esc(txt||label)}</span>`}
-function toast(msg,kind){const t=$('#toast');t.textContent=msg;t.className='toast'+(kind?' '+kind:'');t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>t.hidden=true,2600)}
+function toast(msg,kind){const t=$('#toast');t.className='toast'+(kind?' '+kind:'');t.innerHTML='';const sp=document.createElement('span');sp.textContent=msg;t.appendChild(sp);
+  if(!kind){t.insertAdjacentHTML('beforeend','<span class="troad"></span>'+carSvg('sedan','#ffb627',{cls:'tcar',plain:true}));const c=t.querySelector('.tcar');if(c&&c.animate&&!document.body.classList.contains('no-motion')&&!matchMedia('(prefers-reduced-motion: reduce)').matches)c.animate([{transform:'translateX(0)'},{transform:'translateX('+(t.offsetWidth+110)+'px)'}],{duration:1400,easing:'cubic-bezier(.4,0,.2,1)'})}
+  t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>t.hidden=true,2600)}
 
 /* ---------- data access ---------- */
 const V=()=>Object.values(S.vehicles).sort((a,b)=>(a.slot||9)-(b.slot||9));
@@ -686,93 +781,144 @@ function seasonPanel(){
 
 /* ---- selectable charts ---- */
 const CT_ICON={curve:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12C4 12 5 5 8 6s4 5 7-2"/></svg>',bar:'<svg viewBox="0 0 16 16" fill="currentColor"><rect x="2" y="7" width="3" height="7" rx="1"/><rect x="6.5" y="3" width="3" height="11" rx="1"/><rect x="11" y="9" width="3" height="5" rx="1"/></svg>',pie:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="3"><circle cx="8" cy="8" r="5.5" stroke-dasharray="22 13"/></svg>'};
-function niceMax(v){if(v<=0)return 1;const m=Math.pow(10,Math.floor(Math.log10(v))),e=v/m;return (e<=1?1:e<=2?2:e<=2.5?2.5:e<=5?5:10)*m}
+function niceMax(v){if(v<=0)return 1;const m=Math.pow(10,Math.floor(Math.log10(v))),e=v/m;return (e<=1?1:e<=1.5?1.5:e<=2?2:e<=2.5?2.5:e<=3?3:e<=4?4:e<=5?5:e<=6?6:e<=8?8:10)*m}
 function smoothPath(P){if(P.length<2)return '';const n=P.length,dx=[],dy=[],sl=[],mm=[];for(let i=0;i<n-1;i++){dx[i]=P[i+1][0]-P[i][0];dy[i]=P[i+1][1]-P[i][1];sl[i]=dx[i]?dy[i]/dx[i]:0}
   mm[0]=sl[0];mm[n-1]=sl[n-2];for(let i=1;i<n-1;i++)mm[i]=sl[i-1]*sl[i]<=0?0:(sl[i-1]+sl[i])/2;
   for(let i=0;i<n-1;i++){if(sl[i]===0){mm[i]=mm[i+1]=0;continue}const a=mm[i]/sl[i],b=mm[i+1]/sl[i],h=a*a+b*b;if(h>9){const k=3/Math.sqrt(h);mm[i]=k*a*sl[i];mm[i+1]=k*b*sl[i]}}
   let d=`M${P[0][0].toFixed(1)},${P[0][1].toFixed(1)}`;for(let i=0;i<n-1;i++){const h=dx[i]/3;d+=`C${(P[i][0]+h).toFixed(1)},${(P[i][1]+mm[i]*h).toFixed(1)} ${(P[i+1][0]-h).toFixed(1)},${(P[i+1][1]-mm[i+1]*h).toFixed(1)} ${P[i+1][0].toFixed(1)},${P[i+1][1].toFixed(1)}`}return d}
-function xyChart(pts,type,color,fmtV){
-  const W=360,H=210,L=40,Rr=12,Tp=16,B=26;if(!pts.length)return '<div class="empty">داده‌ای برای این بازه نیست.</div>';
-  const max=niceMax(Math.max(...pts.map(p=>p.v))*1.08);const n=pts.length,sel=S.rep.sel;
-  const X=i=>type==='bar'?L+(i+.5)*(W-L-Rr)/n:L+(n===1?(W-L-Rr)/2:i*(W-L-Rr)/(n-1)),Y=v=>Tp+(1-v/max)*(H-Tp-B);
-  let s=`<svg viewBox="0 0 ${W} ${H}" role="img"><g class="grid">`;for(let k=0;k<=4;k++){const v=max*k/4;s+=`<line x1="${L}" x2="${W-Rr}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${L-6}" y="${Y(v)+3.5}" text-anchor="end">${fa(v,max<20?1:0)}</text>`}s+='</g>';
-  const every=Math.ceil(n/5);pts.forEach((p,i)=>{if(i%every===0||i===n-1)s+=`<text x="${X(i)}" y="${H-8}" text-anchor="${type==='bar'?'middle':i===0?'start':i===n-1?'end':'middle'}">${esc(p.lab)}</text>`});
-  if(type==='bar'){const bw=Math.max(3,(W-L-Rr)/n*.62);pts.forEach((p,i)=>{const y=Y(p.v),h=Y(0)-y,x=X(i)-bw/2,r=Math.min(4,bw/2,h);
-      if(h>0)s+=`<path d="M${x.toFixed(1)},${Y(0)}V${(y+r).toFixed(1)}Q${x.toFixed(1)},${y.toFixed(1)} ${(x+r).toFixed(1)},${y.toFixed(1)}H${(x+bw-r).toFixed(1)}Q${(x+bw).toFixed(1)},${y.toFixed(1)} ${(x+bw).toFixed(1)},${(y+r).toFixed(1)}V${Y(0)}Z" fill="${color}" opacity="${sel==null||sel===i?1:.45}"/>`;
+let CHN=0;
+const PALETTE=['var(--v1)','var(--v2)','var(--v3)','var(--v4)','var(--v5)','var(--v6)','var(--v7)','var(--v8)','var(--v9)','var(--v10)','var(--v11)','var(--v12)'];
+const CTYPES={curve:['منحنی','<path d="M1 12C4 12 5 5 8 6s4 5 7-2" fill="none" stroke="currentColor" stroke-width="1.8"/>'],line:['خطی','<path d="M1 12 5 6l4 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8"/>'],col:['ستونی','<rect x="2" y="7" width="3" height="7" rx="1" fill="currentColor"/><rect x="6.5" y="3" width="3" height="11" rx="1" fill="currentColor"/><rect x="11" y="9" width="3" height="5" rx="1" fill="currentColor"/>'],hbar:['میله‌ای','<rect x="2" y="2" width="12" height="3" rx="1" fill="currentColor"/><rect x="5" y="6.5" width="9" height="3" rx="1" fill="currentColor"/><rect x="8" y="11" width="6" height="3" rx="1" fill="currentColor"/>'],donut:['دایره‌ای','<circle cx="8" cy="8" r="5.5" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="22 13"/>']};
+function xyChart(pts,type,color,fmtV,o){
+  o=o||{};const W=360,H=220,L=40,Rr=14,Tp=22,B=26;if(!pts.length)return '<div class="empty">داده‌ای برای این بازه نیست.</div>';
+  const id='c'+(++CHN);const max=niceMax(Math.max(...pts.map(p=>p.v),o.avg||0)*1.1);const n=pts.length,sel=o.sel;
+  const col=type==='col';const X=i=>col?L+(i+.5)*(W-L-Rr)/n:L+(n===1?(W-L-Rr)/2:i*(W-L-Rr)/(n-1)),Y=v=>Tp+(1-v/max)*(H-Tp-B);
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img"><defs><linearGradient id="${id}a" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="${color}" stop-opacity=".45"/><stop offset="1" stop-color="${color}" stop-opacity="0"/></linearGradient><linearGradient id="${id}b" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity=".35"/><stop offset=".35" stop-color="#ffffff" stop-opacity="0"/></linearGradient><filter id="${id}g" x="-10%" y="-30%" width="120%" height="160%"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g class="grid">`;
+  for(let k=0;k<=4;k++){const v=max*k/4;s+=`<line x1="${L}" x2="${W-Rr}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}"/><text x="${L-6}" y="${(Y(v)+3.5).toFixed(1)}" text-anchor="end">${fa(v,max<20?1:0)}</text>`}s+='</g>';
+  const every=Math.ceil(n/(col?6:5));pts.forEach((p,i)=>{if((i%every===0&&(i===n-1||n-1-i>=every/2+.01||i%every!==0))||(i===n-1))s+=`<text x="${X(i).toFixed(1)}" y="${H-8}" text-anchor="${col?'middle':i===0?'start':i===n-1?'end':'middle'}">${esc(p.lab)}</text>`});
+  if(sel!=null&&pts[sel])s+=`<line x1="${X(sel).toFixed(1)}" x2="${X(sel).toFixed(1)}" y1="${Tp}" y2="${H-B}" stroke="var(--cyan)" stroke-opacity=".5" stroke-dasharray="2 3"/>`;
+  if(o.avg!=null)s+=`<line x1="${L}" x2="${W-Rr}" y1="${Y(o.avg).toFixed(1)}" y2="${Y(o.avg).toFixed(1)}" stroke="var(--accent)" stroke-width="1.2" stroke-dasharray="5 4" class="fade"/><text x="${L+4}" y="${(Y(o.avg)+13).toFixed(1)}" style="fill:var(--accent);font-weight:700">میانگین ${fa(o.avg,1)}</text>`;
+  if(col){const bw=Math.max(4,(W-L-Rr)/n*.62);pts.forEach((p,i)=>{const c=p.color||color,y=Y(p.v),h=Y(0)-y,x=X(i)-bw/2,r=Math.min(5,bw/2,h);
+      if(h>0)s+=`<g class="grow" style="animation-delay:${(i*.03).toFixed(2)}s" opacity="${sel==null||sel===i?1:.4}"><path d="M${x.toFixed(1)},${Y(0)}V${(y+r).toFixed(1)}Q${x.toFixed(1)},${y.toFixed(1)} ${(x+r).toFixed(1)},${y.toFixed(1)}H${(x+bw-r).toFixed(1)}Q${(x+bw).toFixed(1)},${y.toFixed(1)} ${(x+bw).toFixed(1)},${(y+r).toFixed(1)}V${Y(0)}Z" fill="${c}"/><path d="M${x.toFixed(1)},${Y(0)}V${(y+r).toFixed(1)}Q${x.toFixed(1)},${y.toFixed(1)} ${(x+r).toFixed(1)},${y.toFixed(1)}H${(x+bw-r).toFixed(1)}Q${(x+bw).toFixed(1)},${y.toFixed(1)} ${(x+bw).toFixed(1)},${(y+r).toFixed(1)}V${Y(0)}Z" fill="url(#${id}b)"/></g>`;
       s+=`<rect x="${(X(i)-(W-L-Rr)/n/2).toFixed(1)}" y="${Tp}" width="${((W-L-Rr)/n).toFixed(1)}" height="${H-Tp-B}" fill="transparent" data-ci="${i}" style="cursor:pointer"/>`});
-    const mi=pts.reduce((m,p,i)=>p.v>pts[m].v?i:m,0);s+=`<text x="${X(mi)}" y="${Y(pts[mi].v)-5}" text-anchor="middle" style="fill:var(--ink);font-weight:700">${fmtV(pts[mi].v)}</text>`}
-  else{const P=pts.map((p,i)=>[X(i),Y(p.v)]);const d=smoothPath(P)||`M${P[0][0]},${P[0][1]}`;
-    if(n>1)s+=`<path d="${d}L${P[n-1][0]},${Y(0)}L${P[0][0]},${Y(0)}Z" fill="${color}" opacity=".12"/><path d="${d}" fill="none" stroke="${color}" stroke-width="2.4" stroke-linecap="round"/>`;
-    P.forEach((q,i)=>{const big=i===n-1||sel===i;s+=`<circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="${big?4.5:2.6}" fill="${color}" stroke="var(--surface)" stroke-width="${big?2:1}"/><circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="13" fill="transparent" data-ci="${i}" style="cursor:pointer"/>`});
-    s+=`<text x="${P[n-1][0].toFixed(1)}" y="${(P[n-1][1]-9).toFixed(1)}" text-anchor="end" style="fill:var(--ink);font-weight:700">${fmtV(pts[n-1].v)}</text>`}
+    const mi=pts.reduce((m,p,i)=>p.v>pts[m].v?i:m,0);s+=`<text class="lbl fade" x="${X(mi).toFixed(1)}" y="${(Y(pts[mi].v)-6).toFixed(1)}" text-anchor="middle">${fmtV(pts[mi].v)}</text>`}
+  else{const P=pts.map((p,i)=>[X(i),Y(p.v)]);const d=type==='line'?'M'+P.map(q=>q[0].toFixed(1)+','+q[1].toFixed(1)).join('L'):(smoothPath(P)||`M${P[0][0]},${P[0][1]}`);
+    if(n>1){s+=`<path class="fade" d="${d}L${P[n-1][0].toFixed(1)},${Y(0)}L${P[0][0].toFixed(1)},${Y(0)}Z" fill="url(#${id}a)"/>`;
+      s+=`<path class="draw" pathLength="1" d="${d}" fill="none" stroke="${color}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" filter="url(#${id}g)"/>`}
+    P.forEach((q,i)=>{const big=i===n-1||sel===i;s+=`<circle class="fade" cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="${big?5:type==='line'?3:2.4}" fill="${big?color:'var(--surface)'}" stroke="${color}" stroke-width="${big?2.5:1.6}"/><circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="13" fill="transparent" data-ci="${i}" style="cursor:pointer"/>`});
+    s+=`<text class="lbl fade" x="${P[n-1][0].toFixed(1)}" y="${(P[n-1][1]-11).toFixed(1)}" text-anchor="end">${fmtV(pts[n-1].v)}</text>`}
   return s+'</svg>'}
-function donut(parts,unit,fmtV){
-  const tot=parts.reduce((s,p)=>s+p.v,0);if(!tot)return '<div class="empty">داده‌ای برای این بازه نیست.</div>';
-  const R1=70,r1=46,cx=90,cy=90;let a=-Math.PI/2;let s=`<svg viewBox="0 0 180 180" style="max-width:220px;margin:0 auto;direction:ltr" role="img">`;
-  parts.forEach((p,i)=>{const da=p.v/tot*2*Math.PI;const gap=parts.length>1?.03:0;const a0=a+gap/2,a1=a+da-gap/2;a+=da;if(a1<=a0)return;const lg=a1-a0>Math.PI?1:0;const P=(rad,ang)=>[cx+rad*Math.cos(ang),cy+rad*Math.sin(ang)];
-    if(da>=2*Math.PI-1e-6){s+=`<circle cx="${cx}" cy="${cy}" r="${(R1+r1)/2}" fill="none" stroke="${p.color}" stroke-width="${R1-r1}" data-ci="${i}"/>`;return}
-    const [x0,y0]=P(R1,a0),[x1,y1]=P(R1,a1),[x2,y2]=P(r1,a1),[x3,y3]=P(r1,a0);
-    s+=`<path d="M${x0.toFixed(2)},${y0.toFixed(2)}A${R1},${R1} 0 ${lg} 1 ${x1.toFixed(2)},${y1.toFixed(2)}L${x2.toFixed(2)},${y2.toFixed(2)}A${r1},${r1} 0 ${lg} 0 ${x3.toFixed(2)},${y3.toFixed(2)}Z" fill="${p.color}" opacity="${S.rep.sel==null||S.rep.sel===i?1:.45}" data-ci="${i}" style="cursor:pointer"/>`});
-  s+=`<text x="${cx}" y="${cy-2}" text-anchor="middle" style="fill:var(--ink);font-size:16px;font-weight:800">${fmtV(tot)}</text><text x="${cx}" y="${cy+16}" text-anchor="middle">${esc(unit)}</text></svg>`;
-  return s+`<div class="legend">${parts.map(p=>`<div><span class="dot" style="background:${p.color}"></span>${esc(p.name)}<span class="val">${fmtV(p.v)} · ${fa(p.v/tot*100,0)}٪</span></div>`).join('')}</div>`}
-function hbarList(parts,fmtV){const mx=Math.max(...parts.map(p=>p.v),1);return parts.length?`<div class="hbars">${parts.map(p=>`<div class="hbar"><span><span class="dot" style="background:${p.color}"></span> ${esc(p.name)}</span><span class="num">${fmtV(p.v)}</span><div class="track"><div class="fill" style="width:${(p.v/mx*100).toFixed(1)}%;background:${p.color}"></div></div></div>`).join('')}</div>`:'<div class="empty">داده‌ای برای این بازه نیست.</div>'}
+function donut(parts,unit,fmtV,o){
+  o=o||{};const tot=parts.reduce((s,p)=>s+p.v,0);if(!tot)return '<div class="empty">داده‌ای برای این بازه نیست.</div>';
+  const r=58,C=2*Math.PI*r;let acc=0;let s=`<svg viewBox="0 0 180 180" style="max-width:230px;margin:0 auto;direction:ltr" role="img"><circle cx="90" cy="90" r="${r}" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="24"/><g class="ring donut-ring">`;
+  parts.forEach((p,i)=>{const len=p.v/tot*C,gap=parts.length>1?Math.min(2.5,len*.3):0;const sel=o.sel==null||o.sel===i;
+    s+=`<circle cx="90" cy="90" r="${r}" fill="none" stroke="${p.color}" stroke-width="${o.sel===i?28:24}" stroke-dasharray="${Math.max(.1,len-gap).toFixed(2)} ${(C-len+gap).toFixed(2)}" stroke-dashoffset="${(-acc).toFixed(2)}" opacity="${sel?1:.35}" data-ci="${i}" style="cursor:pointer"/>`;acc+=len});
+  const cv=o.sel!=null&&parts[o.sel]?parts[o.sel].v:tot;
+  s+=`</g><text x="90" y="88" text-anchor="middle" style="fill:var(--ink);font-size:17px;font-weight:800">${fmtV(cv)}</text><text x="90" y="106" text-anchor="middle">${esc(o.sel!=null&&parts[o.sel]?parts[o.sel].name:unit)}</text></svg>`;
+  return s+`<div class="legend">${parts.map((p,i)=>`<div data-ci="${i}" style="cursor:pointer"><span class="dot" style="background:${p.color}"></span>${esc(p.name)}<span class="val">${fmtV(p.v)} · ${fa(p.v/tot*100,0)}٪</span></div>`).join('')}</div>`}
+function hbarChart(items,fmtV,o){o=o||{};if(!items.length)return '<div class="empty">داده‌ای برای این بازه نیست.</div>';const mx=Math.max(...items.map(p=>p.v),1);
+  return `<div class="hbars2">${items.map((p,i)=>`<div class="hbar2" data-ci="${i}" aria-pressed="${o.sel===i}"><span>${p.color?`<span class="dot" style="background:${p.color}"></span> `:''}${esc(p.name)}</span><span class="num">${fmtV(p.v)}</span><div class="tr"><div class="fl" style="width:${Math.max(1,p.v/mx*100).toFixed(1)}%;background:linear-gradient(270deg,${p.color||'var(--cyan)'},rgba(255,255,255,.25));animation-delay:${(i*.04).toFixed(2)}s"></div></div></div>`).join('')}</div>`}
+function gauge(val,min,max,last){
+  const cx=100,cy=92,r=72;const ang=v=>Math.PI*(1-(Math.min(max,Math.max(min,v))-min)/((max-min)||1));const P=(a,rr)=>[cx+rr*Math.cos(a),cy-rr*Math.sin(a)];
+  const arc=(a0,a1,rr)=>{const [x0,y0]=P(a0,rr),[x1,y1]=P(a1,rr);return `M${x0.toFixed(1)},${y0.toFixed(1)}A${rr},${rr} 0 0 1 ${x1.toFixed(1)},${y1.toFixed(1)}`};
+  const id='g'+(++CHN);let s=`<svg viewBox="0 0 200 112" role="img" aria-label="میانگین مصرف ${fa(val,1)}"><defs><linearGradient id="${id}" x1="0" x2="1"><stop offset="0" stop-color="var(--good)"/><stop offset=".55" stop-color="var(--accent)"/><stop offset="1" stop-color="var(--bad)"/></linearGradient></defs>`;
+  s+=`<path d="${arc(Math.PI,0,r)}" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="12" stroke-linecap="round"/><path d="${arc(Math.PI,0,r)}" fill="none" stroke="url(#${id})" stroke-width="12" stroke-linecap="round" opacity=".9"/>`;
+  for(let k=0;k<=10;k++){const a=Math.PI*(1-k/10);const [x0,y0]=P(a,r-12),[x1,y1]=P(a,r-(k%5?16:20));s+=`<line x1="${x0.toFixed(1)}" y1="${y0.toFixed(1)}" x2="${x1.toFixed(1)}" y2="${y1.toFixed(1)}" stroke="rgba(255,255,255,.35)" stroke-width="${k%5?1:1.6}"/>`}
+  if(last!=null){const a=ang(last);const [x0,y0]=P(a,r+9),[x1,y1]=P(a,r-6);s+=`<line x1="${x0.toFixed(1)}" y1="${y0.toFixed(1)}" x2="${x1.toFixed(1)}" y2="${y1.toFixed(1)}" stroke="var(--cyan)" stroke-width="2.5" stroke-linecap="round"/>`}
+  const a=ang(val);const [nx,ny]=P(a,r-18);s+=`<line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" style="filter:drop-shadow(0 0 4px rgba(255,182,39,.8))"/><circle cx="${cx}" cy="${cy}" r="6" fill="var(--accent)"/><circle cx="${cx}" cy="${cy}" r="2.4" fill="#1d1300"/>`;
+  s+=`<text x="${P(Math.PI,r)[0]}" y="${cy+14}" text-anchor="middle">${fa(min,0)}</text><text x="${P(0,r)[0]}" y="${cy+14}" text-anchor="middle">${fa(max,0)}</text></svg>`;return s}
 function distSpread(vid,B){const r=evs(vid).filter(e=>e.km!=null).sort(sortEv);const acc={};
   for(let i=1;i<r.length;i++){const a=r[i-1],b=r[i];const n=daysBetween(a.date,b.date),km=b.km-a.km;if(n<=0||km<=0)continue;const d=parseD(a.date);
     for(let k=0;k<n;k++){d.setDate(d.getDate()+1);const ds=iso(d);if(B&&((B[0]&&ds<B[0])||(B[1]&&ds>B[1])))continue;const p=calParts(ds);const key=p.y+'-'+String(p.m).padStart(2,'0');acc[key]=(acc[key]||0)+km/n}}
   return acc}
-const PALETTE=['var(--v1)','var(--v2)','var(--v3)','var(--v4)','var(--v5)','var(--v6)','var(--v7)','var(--v8)'];
-function chartPanel(d){
-  const M=S.rep.metric,c=mainCur(d.cost)||curDefault(),v=d.v,col=vcol(v);const share=M==='share'||M==='cat';
-  const ctype=share?(S.rep.ctype==='bar'?'bar':'pie'):(S.rep.ctype==='bar'?'bar':'curve');
-  const start=d.B[0]||(d.all[0]&&d.all[0].date)||todayISO(),end=d.B[1]||(d.all.length?d.all[d.all.length-1].date:todayISO());
-  const months=monthBuckets(start,end);let body='',kpi='',cap='',read='';
-  if(M==='dist'||M==='cost'){
-    let acc={};if(M==='dist')acc=distSpread(d.vid,d.B);else for(const f of d.fills){if((f.currency||curDefault())!==c||amt(f)==null)continue;const p=calParts(f.date);const k=p.y+'-'+String(p.m).padStart(2,'0');acc[k]=(acc[k]||0)+amt(f)}
-    const pts=months.map(m=>({lab:m.label,v:Math.round(acc[m.key]||0),full:fmtDate(m.first,{year:'numeric',month:'long'})}));
-    const tot=pts.reduce((s,p)=>s+p.v,0);const fmtV=M==='dist'?(x=>fa(x)):(x=>fa(x));
-    kpi=M==='dist'?fa(tot)+' کیلومتر':money(tot,c);cap=M==='dist'?'برآورد: مسافت بین هر دو ثبت کیلومتر به‌طور مساوی بین روزهای آن فاصله تقسیم شده است.':'جمع مبلغ سوخت‌گیری‌ها در هر ماه'+(Object.keys(d.fuelCost).length>1?'؛ فقط واحد '+(CUR[c]||c)+' (تبدیل ارز انجام نمی‌شود).':'.');
-    body=xyChart(pts,ctype,col,fmtV);const sp=S.rep.sel!=null&&pts[S.rep.sel];read=sp?`${sp.full}: ${M==='dist'?fa(sp.v)+' کیلومتر':money(sp.v,c)}`:''}
-  else if(M==='cons'||M==='ppl'){
-    const pts=M==='cons'?d.segs.map(x=>({lab:fmtDate(x.date,{month:'short',year:'2-digit'}),v:+x.cons.toFixed(2),full:fmtDate(x.date),extra:fa(x.dist)+' کیلومتر · '+fa(x.liters,2)+' لیتر'})):d.fills.filter(f=>f.ppl!=null).map(f=>({lab:fmtDate(f.date,{month:'short',year:'2-digit'}),v:f.ppl,full:fmtDate(f.date),extra:(f.station||'')+' · '+(CUR[f.currency]||f.currency||'')}));
-    kpi=M==='cons'?(d.st?fa(d.st.avg,2)+' لیتر/۱۰۰ کیلومتر':'—'):(pts.length?fa(pts[pts.length-1].v,2)+' آخرین قیمت':'—');
-    cap=M==='cons'?'هر نقطه = لیتر ÷ مسافت از سوخت‌گیری باک‌پر قبلی × ۱۰۰؛ عدد بالا میانگین وزنی بازه است.':'قیمت پرداختی هر لیتر در هر سوخت‌گیری، طبق ثبت شما.';
-    body=xyChart(pts,ctype,col,x=>fa(x,1));const sp=S.rep.sel!=null&&pts[S.rep.sel];read=sp?`${sp.full}: ${fa(sp.v,2)} · ${sp.extra}`:''}
-  else if(M==='share'){
-    const parts=V().filter(x=>x.status!=='archived'||x.id===d.vid).map(x=>{const a=distSpread(x.id,d.B);return {name:vname(x),v:Math.round(Object.values(a).reduce((s,y)=>s+y,0)),color:vcol(x)}}).filter(p=>p.v>0);
-    kpi=fa(parts.reduce((s,p)=>s+p.v,0))+' کیلومتر';cap='سهم هر خودرو از مسافت کل بازه (همان برآورد مسافت ماهانه).';
-    body=ctype==='bar'?hbarList(parts,x=>fa(x)+' کیلومتر'):donut(parts,'کیلومتر',x=>fa(x));const sp=S.rep.sel!=null&&parts[S.rep.sel];read=sp?`${sp.name}: ${fa(sp.v)} کیلومتر`:''}
-  else{
-    const cats={};for(const e of d.inr){const a=amt(e);if(a==null||(e.currency||curDefault())!==c)continue;cats[cat(e)]=(cats[cat(e)]||0)+a}
-    const parts=Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([k,x],i)=>({name:k,v:x,color:PALETTE[i%PALETTE.length]}));
-    kpi=money(parts.reduce((s,p)=>s+p.v,0),c);cap='فقط رویدادهای دارای مبلغ'+(d.inr.some(e=>(e.type==='service'||e.type==='repair')&&amt(e)==null)?'؛ بعضی سرویس‌ها مبلغ ندارند و در این جمع نیستند.':'.');
-    body=ctype==='bar'?hbarList(parts,x=>money(x,c)):donut(parts,CUR[c]||c,x=>fa(x));const sp=S.rep.sel!=null&&parts[S.rep.sel];read=sp?`${sp.name}: ${money(sp.v,c)}`:''}
+const ALLOWED={dist:['curve','line','col','hbar','donut'],cost:['curve','line','col','hbar','donut'],cons:['curve','line','col','hbar'],ppl:['curve','line','col','hbar'],share:['donut','hbar','col'],cat:['donut','hbar','col']};
+function chartModel(vid,B,M){
+  const v=vById(vid),col=vcol(v);const inB=e=>(!B[0]||e.date>=B[0])&&(!B[1]||e.date<=B[1]);
+  const all=evs(vid).sort(sortEv),inr=all.filter(inB),fills=inr.filter(e=>e.type==='fuel'),segs=fuelSeries(vid).segs.filter(inB),st=consStats(segs);
+  const costs=sumCur(inr),c=mainCur(costs)||curDefault();
+  const start=B[0]||(all[0]&&all[0].date)||todayISO(),end=B[1]||(all.length?all[all.length-1].date:todayISO());
+  if(M==='dist'||M==='cost'){const months=monthBuckets(start,end);let acc={};
+    if(M==='dist')acc=distSpread(vid,B);else for(const f of fills){if((f.currency||curDefault())!==c||amt(f)==null)continue;const p=calParts(f.date);const k=p.y+'-'+String(p.m).padStart(2,'0');acc[k]=(acc[k]||0)+amt(f)}
+    const pts=months.map((m,i)=>({lab:m.label,name:fmtDate(m.first,{year:'2-digit',month:'long'}),v:Math.round(acc[m.key]||0),full:fmtDate(m.first,{year:'numeric',month:'long'}),color:PALETTE[i%PALETTE.length]}));
+    const tot=pts.reduce((s,p)=>s+p.v,0);const fmtV=M==='dist'?(x=>fa(x)):(x=>fa(x));const unit=M==='dist'?'کیلومتر':(CUR[c]||c);
+    return {kind:'series',pts,color:col,fmtV,unit,kpi:M==='dist'?fa(tot)+' کیلومتر':money(tot,c),
+      cap:M==='dist'?'برآورد: مسافت بین هر دو ثبت کیلومتر به‌طور مساوی بین روزهای آن فاصله تقسیم شده است.':'جمع مبلغ سوخت‌گیری‌های هر ماه'+(Object.keys(sumCur(fills)).length>1?'؛ فقط واحد '+(CUR[c]||c)+'، بدون تبدیل ارز.':'.'),
+      read:p=>`${p.full}: ${M==='dist'?fa(p.v)+' کیلومتر':money(p.v,c)}`}}
+  if(M==='cons'||M==='ppl'){
+    const pts=M==='cons'?segs.map(x=>({lab:fmtDate(x.date,{month:'short',year:'2-digit'}),name:fmtDate(x.date),v:+x.cons.toFixed(2),full:fmtDate(x.date),extra:fa(x.dist)+' کیلومتر · '+fa(x.liters,2)+' لیتر'})):fills.filter(f=>f.ppl!=null).map(f=>({lab:fmtDate(f.date,{month:'short',year:'2-digit'}),name:fmtDate(f.date),v:f.ppl,full:fmtDate(f.date),extra:(f.station||'—')+' · '+(CUR[f.currency]||f.currency||'')}));
+    return {kind:'series',pts,color:col,fmtV:x=>fa(x,1),avg:M==='cons'&&st?st.avg:null,unit:M==='cons'?'لیتر/۱۰۰ کیلومتر':'',
+      kpi:M==='cons'?(st?fa(st.avg,2)+' لیتر/۱۰۰ کیلومتر':'—'):(pts.length?fa(pts[pts.length-1].v,2)+' (آخرین قیمت)':'—'),
+      cap:M==='cons'?'هر نقطه = لیتر ÷ مسافت از سوخت‌گیری باک‌پر قبلی × ۱۰۰. خط‌چین کهربایی میانگین وزنی بازه است.':'قیمت پرداختی هر لیتر در هر سوخت‌گیری، طبق ثبت شما.',
+      read:p=>`${p.full}: ${fa(p.v,2)} · ${p.extra}`}}
+  if(M==='share'){const parts=V().filter(x=>x.status!=='archived'||x.id===vid).map(x=>{const a=distSpread(x.id,B);return {name:vname(x),v:Math.round(Object.values(a).reduce((s,y)=>s+y,0)),color:vcol(x)}}).filter(p=>p.v>0);
+    return {kind:'parts',parts,fmtV:x=>fa(x),unit:'کیلومتر',kpi:fa(parts.reduce((s,p)=>s+p.v,0))+' کیلومتر',cap:'سهم هر خودرو از مسافت کل بازه (از همان برآورد مسافت).',read:p=>`${p.name}: ${fa(p.v)} کیلومتر`,allCars:true}}
+  const cats={};for(const e of inr){const a=amt(e);if(a==null||(e.currency||curDefault())!==c)continue;cats[cat(e)]=(cats[cat(e)]||0)+a}
+  const parts=Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([k,x],i)=>({name:k,v:x,color:PALETTE[i%PALETTE.length]}));
+  return {kind:'parts',parts,fmtV:x=>fa(x),unit:CUR[c]||c,kpi:money(parts.reduce((s,p)=>s+p.v,0),c),cap:'فقط رویدادهای دارای مبلغ'+(inr.some(e=>(e.type==='service'||e.type==='repair')&&amt(e)==null)?'؛ بعضی سرویس‌ها مبلغ ندارند و در این جمع نیستند.':'.'),read:p=>`${p.name}: ${money(p.v,c)}`}}
+function chartCard(key,vid,B,title){
+  const cs=S.ch[key];const M=cs.metric;const allowed=ALLOWED[M];if(!allowed.includes(cs.type))cs.type=allowed[0];const T=cs.type;
+  const m=chartModel(vid,B,M);const v=vById(vid);let body='',items=[];
+  if(m.kind==='series'){items=m.pts;
+    const hb=m.pts.filter(p=>p.v>0).reverse();body=T==='hbar'?hbarChart(hb.map(p=>({name:p.name,v:p.v,color:m.color})),m.fmtV,{sel:cs.sel}):T==='donut'?donut(m.pts.filter(p=>p.v>0),m.unit,m.fmtV,{sel:cs.sel}):xyChart(m.pts.map(p=>Object.assign({},p,{color:null})),T,m.color,m.fmtV,{sel:cs.sel,avg:m.avg})}
+  else{items=m.parts;body=T==='donut'?donut(m.parts,m.unit,m.fmtV,{sel:cs.sel}):T==='hbar'?hbarChart(m.parts,m.fmtV,{sel:cs.sel}):xyChart(m.parts.map(p=>({lab:p.name,v:p.v,color:p.color})),'col',m.parts[0]?m.parts[0].color:'var(--cyan)',m.fmtV,{sel:cs.sel})}
+  let selItem=null;if(cs.sel!=null){if(m.kind==='series'&&T==='hbar')selItem=m.pts.filter(p=>p.v>0).reverse()[cs.sel]||null;else if(m.kind==='series'&&T==='donut')selItem=m.pts.filter(p=>p.v>0)[cs.sel]||null;else selItem=items[cs.sel]||null}
   const metrics=[['dist','مسافت ماهانه'],['cons','مصرف سوخت'],['cost','هزینه سوخت'],['ppl','قیمت هر لیتر'],['share','سهم مسافت'],['cat','هزینه بر اساس دسته']];
-  return `<section class="panel"><h3>نمودارها</h3>
-   <div class="seg wrap" role="group" aria-label="شاخص">${metrics.map(([k,t])=>`<button type="button" data-metric="${k}" aria-pressed="${M===k}">${t}</button>`).join('')}</div>
-   <div class="seg" role="group" aria-label="نوع نمودار">${[['curve','منحنی'],['bar','ستونی'],['pie','دایره‌ای']].map(([k,t])=>`<button type="button" data-ctype="${k}" aria-pressed="${ctype===k}" ${share?(k==='curve'?'disabled':''):(k==='pie'?'disabled':'')}>${CT_ICON[k]}${t}</button>`).join('')}</div>
-   <div class="kpi-line"><b>${kpi}</b><span class="small muted">${share&&M==='share'?'همه خودروها':esc(vname(v))}</span></div>
-   <div class="chart">${body}</div>
-   <div class="chart-read">${read?esc(read):'<span class="muted small">روی هر نقطه، ستون یا بخش بزنید تا مقدارش را ببینید.</span>'}</div>
-   <p class="chart-cap" style="margin:0">${esc(cap)} ${share?'':'«دایره‌ای» فقط برای سهم‌ها فعال است.'}</p></section>`}
+  const anim=cs.anim;cs.anim=false;
+  return `<section class="panel"><div class="section-h"><h3>${esc(title)}</h3><span class="small muted">${m.allCars?'همه خودروها':esc(vname(v))}</span></div>
+   <div class="seg wrap" role="group" aria-label="شاخص">${metrics.map(([k,t])=>`<button type="button" data-metric="${key}|${k}" aria-pressed="${M===k}">${t}</button>`).join('')}</div>
+   <div class="seg" role="group" aria-label="نوع نمودار">${Object.entries(CTYPES).map(([k,[t,ic]])=>`<button type="button" data-ctype="${key}|${k}" aria-pressed="${T===k}" ${allowed.includes(k)?'':'disabled'} title="${t}"><svg viewBox="0 0 16 16" aria-hidden="true">${ic}</svg>${t}</button>`).join('')}</div>
+   <div class="kpi-line"><b>${m.kpi}</b></div>
+   <div class="chart${anim?' anim-chart':''}" data-key="${key}">${body}</div>
+   <div class="chart-read">${selItem?esc(m.read(selItem)):'<span class="muted small">روی هر نقطه، ستون، میله یا بخش بزنید تا مقدارش را ببینید.</span>'}</div>
+   <p class="chart-cap" style="margin:0">${esc(m.cap)}${['cons','ppl'].includes(M)?' نمودار دایره‌ای برای نرخ‌ها (مصرف، قیمت) معنی ندارد و غیرفعال است.':''}</p></section>`}
+
+/* ---- car illustration ---- */
+const BODY_TYPES={sedan:'سدان',hatchback:'هاچ‌بک',suv:'شاسی‌بلند (SUV)',wagon:'استیشن',coupe:'کوپه',van:'ون',pickup:'وانت'};
+const CAR_COLORS=[['#f4f5f7','سفید'],['#c4cad3','نقره‌ای'],['#7c8591','خاکستری'],['#1f242c','مشکی'],['#2563eb','آبی'],['#1e3a8a','سرمه‌ای'],['#c81e1e','قرمز'],['#7f1d1d','زرشکی'],['#15803d','سبز'],['#d6c3a3','بژ'],['#eab308','زرد'],['#ea580c','نارنجی']];
+const CAR_SHAPES={
+ sedan:{b:'M14,72Q12,60 26,57L70,52Q88,34 112,31L150,31Q170,32 186,50L218,55Q230,58 230,68L230,74Q230,78 224,78L200,78A20,20 0 0 0 164,78L76,78A20,20 0 0 0 40,78L20,78Q14,78 14,72Z',w:['M80,52Q95,37 114,35L134,35L134,52Z','M140,35L150,35Q166,36 178,52L140,52Z'],door:'M137,36L137,76'},
+ hatchback:{b:'M18,72Q16,60 30,57L66,52Q84,33 108,30L178,30Q194,31 204,48L212,56Q218,60 218,70L218,74Q218,78 212,78L200,78A20,20 0 0 0 164,78L76,78A20,20 0 0 0 40,78L24,78Q18,78 18,72Z',w:['M76,52Q90,36 110,34L132,34L132,52Z','M138,34L176,34Q190,36 198,52L138,52Z'],door:'M135,35L135,76'},
+ suv:{b:'M14,74L14,60Q14,52 26,50L62,46Q76,26 98,22L184,22Q200,24 210,44L222,50Q230,54 230,64L230,74Q230,78 224,78L200,78A20,20 0 0 0 164,78L76,78A20,20 0 0 0 40,78L20,78Q14,78 14,74Z',w:['M70,46Q82,30 100,27L134,27L134,46Z','M140,27L180,27Q194,29 202,46L140,46Z'],door:'M137,28L137,76',rail:'M96,19L188,19'},
+ wagon:{b:'M14,72Q12,60 26,57L70,52Q88,34 112,31L198,31Q208,33 214,48L222,55Q230,58 230,68L230,74Q230,78 224,78L200,78A20,20 0 0 0 164,78L76,78A20,20 0 0 0 40,78L20,78Q14,78 14,72Z',w:['M80,52Q95,37 114,35L134,35L134,52Z','M140,35L196,35Q204,38 208,52L140,52Z'],door:'M137,36L137,76'},
+ coupe:{b:'M14,72Q12,62 28,58L80,52Q102,35 126,33L148,35Q178,40 198,55L222,59Q230,61 230,70L230,74Q230,78 224,78L200,78A20,20 0 0 0 164,78L76,78A20,20 0 0 0 40,78L20,78Q14,78 14,72Z',w:['M90,52Q106,39 126,37L146,38Q166,42 182,52Z'],door:'M140,40L140,76'},
+ van:{b:'M14,76L14,54Q14,46 24,44L42,40Q52,20 74,18L214,18Q228,18 229,32L230,76Q230,78 226,78L200,78A20,20 0 0 0 164,78L76,78A20,20 0 0 0 40,78L18,78Q14,78 14,76Z',w:['M50,40Q58,24 76,22L104,22L104,40Z','M110,22L150,22L150,40L110,40Z','M156,22L204,22L204,40L156,40Z'],door:'M107,22L107,76'},
+ pickup:{b:'M14,74L14,58Q14,50 26,49L60,46Q72,26 92,24L134,24L138,48L230,50L230,74Q230,78 224,78L200,78A20,20 0 0 0 164,78L76,78A20,20 0 0 0 40,78L20,78Q14,78 14,74Z',w:['M68,46Q78,30 94,28L130,28L132,46Z'],door:'M104,28L104,76',bed:'M140,50L228,52'}};
+function carSvg(type,color,o){o=o||{};const sh=CAR_SHAPES[type]||CAR_SHAPES.sedan;const id='car'+(++CHN);const wheel=(cx)=>`<g class="wheel"><circle cx="${cx}" cy="78" r="15" fill="#0b0e12"/><circle cx="${cx}" cy="78" r="9" fill="#9aa5b4"/><circle cx="${cx}" cy="78" r="9" fill="url(#${id}r)"/>${[0,72,144,216,288].map(a=>`<line x1="${cx}" y1="78" x2="${(cx+8*Math.cos(a*Math.PI/180)).toFixed(1)}" y2="${(78+8*Math.sin(a*Math.PI/180)).toFixed(1)}" stroke="#4b5563" stroke-width="1.6"/>`).join('')}<circle cx="${cx}" cy="78" r="2.4" fill="#1f2937"/></g>`;
+  return `<svg class="${o.cls||'car'}" viewBox="0 0 244 100" aria-hidden="true"><defs><linearGradient id="${id}s" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity=".45"/><stop offset=".45" stop-color="#ffffff" stop-opacity=".05"/><stop offset="1" stop-color="#000000" stop-opacity=".25"/></linearGradient><linearGradient id="${id}w" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#bfe9ff"/><stop offset="1" stop-color="#3b5b7a"/></linearGradient><radialGradient id="${id}r"><stop offset="0" stop-color="#e5e7eb"/><stop offset="1" stop-color="#6b7280"/></radialGradient></defs>
+   ${o.plain?'':'<ellipse cx="122" cy="93" rx="104" ry="6" fill="#000" opacity=".45"/>'}
+   <path d="${sh.b}" fill="${color}"/><path d="${sh.b}" fill="url(#${id}s)"/>${sh.rail?`<path d="${sh.rail}" stroke="#2a2f37" stroke-width="3" stroke-linecap="round"/>`:''}${sh.bed?`<path d="${sh.bed}" stroke="rgba(0,0,0,.35)" stroke-width="2"/>`:''}
+   ${sh.w.map(w=>`<path d="${w}" fill="url(#${id}w)" opacity=".9"/>`).join('')}<path d="${sh.door}" stroke="rgba(0,0,0,.28)" stroke-width="1.2"/>
+   <ellipse cx="${type==='hatchback'?24:20}" cy="64" rx="6" ry="3.2" fill="#ffe7a3"/><ellipse cx="${type==='hatchback'?24:20}" cy="64" rx="12" ry="6" fill="#ffd36b" opacity=".25"/>
+   <rect x="${type==='hatchback'?210:222}" y="60" width="6" height="5" rx="1.5" fill="#ff3b4a"/>
+   ${wheel(58)}${wheel(182)}</svg>`}
+function inferBody(v){if(v.bodyType&&BODY_TYPES[v.bodyType])return {type:v.bodyType,inferred:false};const t=((v.brand||'')+' '+(v.model||'')+' '+(v.chassis||'')).toLowerCase();
+  const type=/micra|polo|golf|clio|corsa|yaris|i20|fiesta|208|astra/.test(t)?'hatchback':/kodiaq|tiguan|qashqai|x-?trail|rav4|tucson|sportage|x[35]|gl[ce]|suv/.test(t)?'suv':'sedan';return {type,inferred:true}}
+function heroBlock(v){const bt=inferBody(v);const color=v.color||'#c4cad3';const photo=v.photo&&v.view!=='cartoon';
+  const tabs=v.photo?`<div class="tabs2"><button type="button" data-view="${v.id}|cartoon" aria-pressed="${!photo}">کارتون</button><button type="button" data-view="${v.id}|photo" aria-pressed="${photo}">عکس</button></div>`:'';
+  const note=(bt.inferred||!v.color)&&!photo?`<a class="infer" href="#prefs" data-vedit-go="${v.id}">${bt.inferred?'نوع بدنه':''}${bt.inferred&&!v.color?' و ':''}${!v.color?'رنگ':''} را در تنظیمات تأیید کنید</a>`:'';
+  return `<div class="hero">${photo?`<img class="photo" src="${esc(v.photo)}" alt="عکس ${esc(vname(v))}"><div class="photo-fade"></div>`:`<div class="stars"></div><div class="road"><i></i></div>${carSvg(bt.type,color)}`}${tabs}${note}</div>`}
+async function compressImage(file){const url=URL.createObjectURL(file);try{const img=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=url});
+  const sc=Math.min(1,720/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.round(img.width*sc);c.height=Math.round(img.height*sc);c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+  let q=.72,out=c.toDataURL('image/jpeg',q);while(out.length>200000&&q>.35){q-=.12;out=c.toDataURL('image/jpeg',q)}return out}finally{URL.revokeObjectURL(url)}}
 
 function vehicleCard(v){
   const o=odo(v.id);const {fills,segs}=fuelSeries(v.id);const st=consStats(segs);const lastFill=fills[fills.length-1];
   const ys=startOfYear(),ms=startOfMonth();const yc=sumCur(evs(v.id).filter(e=>e.date>=ys)),mc=sumCur(evs(v.id).filter(e=>e.date>=ms));
   const rem=allReminders(v.id);const worst=rem[0];
   const spec=[v.year?fa(v.year).replace(/٬/g,''):null,v.chassis,v.fuel,v.gearbox,v.market?'بازار '+v.market:null].filter(Boolean).join(' · ');
+  const cons=segs.map(x=>x.cons);const gmin=cons.length?Math.floor(Math.min(...cons)*.9):0,gmax=cons.length?Math.ceil(Math.max(...cons)*1.08):10;
   return `<article class="vcard${v.status==='archived'?' arch':''}">
+   ${heroBlock(v)}
    <div class="vhead"><div><div class="vname"><span class="dot" style="background:${vcol(v)}"></span><h3>${esc((v.brand||'')+' '+(v.model||''))}</h3></div><div class="vmeta">${esc(spec)||'مشخصات ثبت نشده'}</div></div>
    ${v.status==='archived'?'<span class="pill neutral">بایگانی · نمونه</span>':worst?pill(worst.st.state,worst.st.state==='ok'?'یادآوری‌ها در موعد':worst.title+': '+STATE_UI[worst.st.state][1]):'<span class="pill neutral">یادآوری فعال ندارد</span>'}</div>
    ${plateBlock(v)}
    ${kmBlock(v,o)}
    ${v.status!=='archived'?`<button class="btn primary big" type="button" data-fuel="${v.id}">${FUEL_ICON}ثبت سوخت‌گیری</button>`:''}
+   ${st?`<div class="gauge-wrap"><div class="gauge">${gauge(st.avg,gmin,gmax,st.last.cons)}</div><div class="stat"><span class="k">میانگین مصرف <span class="chip calc">محاسبه</span></span><span class="v" style="font-size:1.35rem;color:var(--accent)">${fa(st.avg,1)} <small>لیتر/۱۰۰ کیلومتر</small></span><span class="s">از ${fa(st.n)} دوره باک‌پر، ${fa(st.D)} کیلومتر</span><span class="s" style="color:var(--cyan)">▮ آخرین دوره: ${fa(st.last.cons,1)} · ${fmtDate(st.last.date)}</span></div></div>`:'<div class="small muted">برای عقربه مصرف، دست‌کم دو سوخت‌گیری باک‌پر با کیلومتر لازم است.</div>'}
    <div class="stats">
-    <div class="stat"><span class="k">میانگین مصرف <span class="chip calc">محاسبه</span></span><span class="v">${st?fa(st.avg,1)+' <small>لیتر/۱۰۰ کیلومتر</small>':'—'}</span><span class="s">${st?'از '+fa(st.n)+' دوره باک‌پر، '+fa(st.D)+' کیلومتر':'دست‌کم دو سوخت‌گیری باک‌پر با کیلومتر لازم است'}</span></div>
-    <div class="stat"><span class="k">مصرف آخرین دوره</span><span class="v">${st?fa(st.last.cons,1):'—'}</span><span class="s">${st?fmtDate(st.last.date)+' · '+fa(st.last.dist)+' کیلومتر':''}</span></div>
     <div class="stat"><span class="k">آخرین سوخت‌گیری</span><span class="v">${lastFill?fmtDate(lastFill.date):'—'}</span><span class="s">${lastFill?fa(lastFill.liters,2)+' لیتر · '+money(amt(lastFill),lastFill.currency):''}</span></div>
     <div class="stat"><span class="k">هزینه ثبت‌شده ${cal()==='persian'?'سال جاری شمسی':'سال '+fa(new Date().getFullYear()).replace(/٬/g,'')}</span><span class="v">${moneyMulti(yc)}</span><span class="s">ماه جاری: ${moneyMulti(mc)}</span></div>
    </div>
-   ${segs.length>1?`<div><div class="small muted">روند مصرف هر دوره باک‌پر</div>${sparkline(segs.slice(-24),vcol(v))}</div>`:''}
   </article>`}
 function vDashboard(){
   const pool=S.dashArch?V():activeV();if(S.dashVeh!=='all'&&!pool.some(v=>v.id===S.dashVeh))S.dashVeh='all';const dv=S.dashVeh;
@@ -783,7 +929,8 @@ function vDashboard(){
   return `<div class="view-head"><h2>وضعیت خودروها</h2><p>اعداد از رکوردهای ثبت‌شده شما محاسبه شده‌اند. جایی که داده کافی نیست، کمبود نوشته شده است.</p></div>
   <div class="vswitch" role="group" aria-label="انتخاب خودرو"><button type="button" data-dv="all" aria-pressed="${dv==='all'}">همه</button>${pool.map(v=>`<button type="button" data-dv="${v.id}" aria-pressed="${dv===v.id}"><span class="dot" style="background:${vcol(v)}"></span>${esc(vname(v))}</button>`).join('')}</div>
   ${archN?`<div class="checks"><label><input type="checkbox" id="dash-arch" ${S.dashArch?'checked':''}> نمایش خودروی بایگانی‌شده</label></div>`:''}
-  <div class="vgrid">${list.map(vehicleCard).join('')||welcomePanel()}</div>
+  <div class="vgrid${S.heroAnim?' anim':''}">${list.map(vehicleCard).join('')||welcomePanel()}</div>
+  ${(()=>{const cv=dv!=='all'?dv:(activeV()[0]||{}).id;if(!cv)return '';const t=new Date();const st=new Date(t);st.setFullYear(st.getFullYear()-1);return chartCard('dash',cv,[iso(st),todayISO()],'نمودار ۱۲ ماه اخیر')})()}
   <div class="foot"><span>منبع: ثبت‌های شما (فایل بنزین.xlsx و گفتگو)</span><span>مصرف = لیتر ÷ مسافت بین دو سوخت‌گیری باک‌پر × ۱۰۰</span><span>به‌روزرسانی داده: ${fmtStamp(maxUpd(Object.values(S.events)))}</span></div>
   <div class="cols">
    <section class="panel"><div class="section-h"><h3>یادآوری‌ها</h3><a href="#service" class="small">برنامه سرویس</a></div>
@@ -1009,7 +1156,7 @@ function vReports(){
    <div class="kpi"><span class="k">میانگین مصرف</span><span class="v">${d.st?fa(d.st.avg,2):'—'}</span><span class="s">${d.st?`لیتر/۱۰۰ کیلومتر · ${fa(d.st.n)} دوره باک‌پر`:'دو سوخت‌گیری باک‌پر لازم است'}</span></div>
    <div class="kpi"><span class="k">هزینه سوخت</span><span class="v">${moneyMulti(d.fuelCost)}</span><span class="s">${fa(d.fills.length)} سوخت‌گیری · ${fa(d.fills.reduce((s,f)=>s+(f.liters||0),0),1)} لیتر</span></div>
   </div>
-  ${chartPanel(d)}
+  ${chartCard('rep',d.vid,d.B,'نمودارها')}
   <section class="panel"><h3>مالکیت ${esc(vname(v))} از اولین ثبت</h3>
    <div class="kpis">
     <div class="kpi"><span class="k">اولین ثبت</span><span class="v" style="font-size:1rem">${d.all.length?fmtDate(d.all[0].date):'—'}</span><span class="s">${first?fa(first.km,1)+' کیلومتر':''}</span></div>
@@ -1081,8 +1228,9 @@ function vResearch(){
    <div class="foot"><span>به‌روزرسانی: ${fmtStamp(r.updatedAt)}</span></div></article>`).join(''):'<div class="empty">هنوز منبعی ثبت نشده است.</div>'}</div>`}
 
 /* ---- prefs ---- */
-const VF=[['brand','برند'],['model','مدل'],['short','نام کوتاه'],['chassis','کد شاسی/نسل'],['year','سال ساخت','number'],['fuel','نوع سوخت','fuel'],['gearbox','گیربکس'],['steering','فرمان','steer'],['market','بازار'],['plateCountry','کشور پلاک','pcountry'],['plate','پلاک'],['vin','VIN'],['purchaseDate','تاریخ خرید','date'],['purchaseKm','کیلومتر هنگام خرید','number']];
-function vehForm(v,p){return `<div class="fgrid">${VF.map(([k,l,t])=>`<div class="field"><label for="${p}-${k}">${l}</label>${t==='fuel'?`<select id="${p}-${k}">${['',...FUELS].map(o=>`<option ${v[k]===o?'selected':''} value="${o}">${o||'—'}</option>`).join('')}</select>`:t==='steer'?`<select id="${p}-${k}">${[['','—'],['left','چپ'],['right','راست']].map(([o,n])=>`<option ${(v[k]||'')===o?'selected':''} value="${o}">${n}</option>`).join('')}</select>`:t==='pcountry'?`<select id="${p}-${k}"><option value="">مثل کشور اپ (${esc(COUNTRIES[country()].name)})</option>${Object.entries(COUNTRIES).map(([o,c])=>`<option ${v[k]===o?'selected':''} value="${o}">${esc(c.name)}</option>`).join('')}</select>`:`<input id="${p}-${k}" type="${t||'text'}" value="${esc(v[k]??'')}">`}</div>`).join('')}
+const VF=[['brand','برند'],['model','مدل'],['short','نام کوتاه'],['chassis','کد شاسی/نسل'],['year','سال ساخت','number'],['fuel','نوع سوخت','fuel'],['gearbox','گیربکس'],['steering','فرمان','steer'],['bodyType','نوع بدنه','body'],['color','رنگ بدنه','color'],['market','بازار'],['plateCountry','کشور پلاک','pcountry'],['plate','پلاک'],['vin','VIN'],['purchaseDate','تاریخ خرید','date'],['purchaseKm','کیلومتر هنگام خرید','number']];
+function vehForm(v,p){return `<div class="fgrid">${VF.map(([k,l,t])=>`<div class="field"><label for="${p}-${k}">${l}</label>${t==='fuel'?`<select id="${p}-${k}">${['',...FUELS].map(o=>`<option ${v[k]===o?'selected':''} value="${o}">${o||'—'}</option>`).join('')}</select>`:t==='body'?`<select id="${p}-${k}"><option value="">—</option>${Object.entries(BODY_TYPES).map(([o,n])=>`<option ${v[k]===o?'selected':''} value="${o}">${n}</option>`).join('')}</select>`:t==='color'?`<select id="${p}-${k}"><option value="">—</option>${CAR_COLORS.map(([o,n])=>`<option ${v[k]===o?'selected':''} value="${o}">${n}</option>`).join('')}</select>`:t==='steer'?`<select id="${p}-${k}">${[['','—'],['left','چپ'],['right','راست']].map(([o,n])=>`<option ${(v[k]||'')===o?'selected':''} value="${o}">${n}</option>`).join('')}</select>`:t==='pcountry'?`<select id="${p}-${k}"><option value="">مثل کشور اپ (${esc(COUNTRIES[country()].name)})</option>${Object.entries(COUNTRIES).map(([o,c])=>`<option ${v[k]===o?'selected':''} value="${o}">${esc(c.name)}</option>`).join('')}</select>`:`<input id="${p}-${k}" type="${t||'text'}" value="${esc(v[k]??'')}">`}</div>`).join('')}
+  <div class="field wide"><label for="${p}-photo">عکس خودرو (اختیاری)</label><input id="${p}-photo" type="file" accept="image/*" data-photo="${p}"><span class="hint">${(S.photoDraft[p]!==undefined?S.photoDraft[p]:v.photo)?'عکس انتخاب شده است. <button type="button" class="btn link" data-photorm="'+p+'">حذف عکس</button>':'عکس کوچک‌سازی می‌شود و کنار تصویر کارتونی، به‌عنوان گزینه نمایش داده می‌شود.'}</span></div>
   <div class="field wide"><label for="${p}-notes">یادداشت</label><textarea id="${p}-notes">${esc(v.notes||'')}</textarea></div>
   <div class="wide bar"><button class="btn primary" type="button" data-vsave="${p}">ذخیره</button><button class="btn" type="button" data-vcancel="1">انصراف</button></div></div>`}
 function vPrefs(){
@@ -1092,6 +1240,7 @@ function vPrefs(){
   <section class="panel"><h3>منطقه و نمایش</h3><div class="fgrid">
    <div class="field"><label for="p-country">کشور</label><select id="p-country">${Object.entries(COUNTRIES).map(([k,c])=>`<option value="${k}" ${country()===k?'selected':''}>${esc(c.name)}</option>`).join('')}</select><span class="hint">واحد پول، طرح پلاک و بازدیدهای فصلی را پیش‌فرض می‌کند.</span></div>
    <div class="field"><label for="p-lang">زبان</label><select id="p-lang">${Object.entries(LANGS).map(([k,n])=>`<option value="${k}" ${k==='fa'?'selected':'disabled'}>${n}${k==='fa'?'':' (به‌زودی)'}</option>`).join('')}</select><span class="hint">انگلیسی و ترکی همراه نسخه فروشگاهی اضافه می‌شوند.</span></div>
+   <div class="field"><label for="p-motion">جلوه‌های حرکتی</label><select id="p-motion"><option value="on" ${S.settings&&S.settings.motion===false?'':'selected'}>روشن (سریع و ملایم)</option><option value="off" ${S.settings&&S.settings.motion===false?'selected':''}>خاموش</option></select></div>
    <div class="field"><label for="p-cal">تقویم</label><select id="p-cal"><option value="gregorian" ${s.calendar!=='persian'?'selected':''}>میلادی</option><option value="persian" ${s.calendar==='persian'?'selected':''}>شمسی</option></select></div>
    <div class="field"><label for="p-cur">واحد پول پیش‌فرض</label><select id="p-cur">${Object.keys(CUR).map(c=>`<option value="${c}" ${curDefault()===c?'selected':''}>${CUR[c]} (${c})</option>`).join('')}</select></div>
    <div class="wide bar"><button class="btn primary" type="button" id="p-save">ذخیره</button></div></div></section>
@@ -1164,13 +1313,15 @@ function render(force){
   S.pending=false;
   $$('a[data-nav]').forEach(a=>a.setAttribute('aria-current',a.getAttribute('href')==='#'+S.route?'page':'false'));
   if(!S.db){return}
-  if(!allLoaded()){$('#main').innerHTML='<div class="empty">در حال دریافت داده‌ها…</div>';return}
+  if(!allLoaded()){$('#main').innerHTML=`<div class="loading"><div class="lroad">${carSvg('sedan','#ffb627',{plain:true})}</div><span>در حال دریافت داده‌ها…</span></div>`;const c=$('.loading svg');if(c&&c.animate)c.animate([{transform:'translateX(0)'},{transform:'translateX(320px)'}],{duration:1200,iterations:Infinity});return}
   const sy=window.scrollY;
-  try{$('#main').innerHTML=VIEWS[S.route]()}catch(err){console.error(err);$('#main').innerHTML='<div class="issues error">نمایش این بخش با خطا روبه‌رو شد. صفحه را دوباره باز کنید.</div>'}
+  document.body.classList.toggle('no-motion',!!(S.settings&&S.settings.motion===false));
+  try{$('#main').innerHTML=VIEWS[S.route]();if(S.route==='dashboard'&&allLoaded())S.heroAnim=false}catch(err){console.error(err);$('#main').innerHTML='<div class="issues error">نمایش این بخش با خطا روبه‌رو شد. صفحه را دوباره باز کنید.</div>'}
   if(S.route==='add')liveHints();
   window.scrollTo(0,sy)}
 let rq=0;function schedule(){if(rq)return;rq=requestAnimationFrame(()=>{rq=0;render()})}
-function route(){const h=location.hash.replace('#','');const r=ROUTES.includes(h)?h:'dashboard';if(r!==S.route){S.route=r;S.editing=false;window.scrollTo(0,0)}if(r!=='add')S.form.editId=null;render(true)}
+function playTread(){const el=$('#tread');if(!el)return;el.classList.remove('go');void el.offsetWidth;el.classList.add('go')}
+function route(){const h=location.hash.replace('#','');const r=ROUTES.includes(h)?h:'dashboard';if(r!==S.route){S.route=r;S.editing=false;window.scrollTo(0,0);playTread();S.heroAnim=true;S.ch.rep.anim=true;S.ch.dash.anim=true}if(r!=='add')S.form.editId=null;render(true)}
 window.addEventListener('hashchange',route);
 
 /* ---------- events ---------- */
@@ -1186,6 +1337,7 @@ main.addEventListener('change',e=>{
   if(id==='bk-file'){onBackupFile(t);return}
   if(t.dataset&&t.dataset.season){const [vid,cid]=t.dataset.season.split('|');seasonToggle(vid,cid,t.checked);return}
   if(t.dataset&&t.dataset.snext){const r=S.rules[t.dataset.snext];const st=r&&ruleStatus(r);if(st&&st.last&&t.value)patch('rules/'+r.id,{dueOverride:{after:st.last.id,date:t.value}},'تاریخ بعدی ذخیره شد');return}
+  if(t.dataset&&t.dataset.photo){const f=t.files&&t.files[0];if(!f)return;compressImage(f).then(u=>{S.photoDraft[t.dataset.photo]=u;toast('عکس آماده است؛ «ذخیره» را بزنید.')}).catch(()=>toast('این عکس خوانده نشد.','bad'));return}
   if(id==='p-country'){const c=COUNTRIES[t.value];if(c&&c.cur){const sel=$('#p-cur');if(sel)sel.value=c.cur}return}
   if(id==='dash-arch'){S.dashArch=t.checked;render(true)}
   else if(['h-veh','h-type','h-from','h-to'].includes(id)){S.hist[id.slice(2)]=t.value;render(true)}
@@ -1195,15 +1347,17 @@ main.addEventListener('change',e=>{
 main.addEventListener('keydown',e=>{const t=e.target;if(e.key!=='Enter'||!t.id)return;if(t.id.startsWith('km-in-')){e.preventDefault();saveKm(t.id.slice(6),false)}else if(t.id.startsWith('pl-in-')){e.preventDefault();savePlate(t.id.slice(6))}});
 main.addEventListener('submit',e=>{if(e.target.id==='evform'){e.preventDefault();saveEvent(false)}});
 main.addEventListener('click',async e=>{
-  const mk=e.target.closest('[data-ci]');if(mk&&mk.closest('.chart')){const i=+mk.dataset.ci;S.rep.sel=S.rep.sel===i?null:i;render(true);return}
+  const mk=e.target.closest('[data-ci]');const chEl=mk&&mk.closest('.chart');if(chEl){const cs=S.ch[chEl.dataset.key];const i=+mk.dataset.ci;cs.sel=cs.sel===i?null:i;render(true);return}
+  const vg=e.target.closest('[data-vedit-go]');if(vg){S.vehEdit=vg.dataset.veditGo;return}
   const b=e.target.closest('button,a[data-preset]');if(!b)return;const d=b.dataset;
   if(d.dv){S.dashVeh=d.dv;render(true);return}
   if(b.id==='bk-export'){exportBackup();return}
   if(b.id==='bk-cancel'){S.restore=null;render(true);return}
   if(b.id==='bk-apply'){const r=S.restore;S.restore=null;if(window.__localStore&&window.__localStore.replace(r.data)){toast('داده‌ها بازیابی شد');location.hash='#dashboard'}else toast('بازیابی انجام نشد؛ فضای ذخیره‌سازی گوشی پر است.','bad');render(true);return}
   if(d.fuel){openFuel(d.fuel);return}
-  if(d.metric){S.rep.metric=d.metric;S.rep.sel=null;render(true);return}
-  if(d.ctype&&!b.disabled){S.rep.ctype=d.ctype;S.rep.sel=null;render(true);return}
+  if(d.metric){const [k,m]=d.metric.split('|');Object.assign(S.ch[k],{metric:m,sel:null,anim:true});render(true);return}
+  if(d.ctype&&!b.disabled){const [k,t]=d.ctype.split('|');Object.assign(S.ch[k],{type:t,sel:null,anim:true});render(true);return}
+  if(d.view){const [vid,vw]=d.view.split('|');patch('vehicles/'+vid,{view:vw},false);return}
   if(d.sveh){S.svcVeh=d.sveh;render(true);return}
   if(d.sdone){const [vid,cid]=d.sdone.split('|');seasonDone(vid,cid);return}
   if(d.kmedit){S.kmEdit=d.kmedit;S.kmDraft=null;S.kmIssue=null;S.plateEdit=null;S.editing=false;render(true);const el=$('#km-in-'+d.kmedit);if(el)el.focus();return}
@@ -1248,15 +1402,16 @@ main.addEventListener('click',async e=>{
     render(true);return}
   if(b.id==='doc-warn-save'){const x=$('#doc-warn').value;const s=clone(S.settings);s.docWarnDays=x===''?null:Number(x);S.editing=false;await put('meta/settings',s);return}
   if(d.rs){await patch('research/'+d.rs,{status:d.st},d.st==='confirmed'?'منبع تأیید شد':d.st==='rejected'?'منبع رد شد':'وضعیت بازگشت');return}
-  if(b.id==='p-save'){const s=clone(S.settings);s.country=$('#p-country').value;s.calendar=$('#p-cal').value;s.currency=$('#p-cur').value;S.editing=false;await put('meta/settings',s);return}
+  if(b.id==='p-save'){const s=clone(S.settings);s.country=$('#p-country').value;s.motion=$('#p-motion').value!=='off';s.calendar=$('#p-cal').value;s.currency=$('#p-cur').value;S.editing=false;await put('meta/settings',s);return}
   if(d.ldel){const [k,i]=d.ldel.split('|');const s=clone(S.settings);s[k].splice(+i,1);await put('meta/settings',s,'حذف شد');return}
   if(d.ladd){const k=d.ladd;const x=$('#add-'+k).value.trim();if(!x)return;const s=clone(S.settings);s[k]=s[k]||[];if(s[k].includes(x)){toast('این مورد وجود دارد.');return}s[k].push(x);S.editing=false;await put('meta/settings',s,'اضافه شد');return}
   if(b.id==='veh-add'){S.vehEdit=S.vehEdit==='new'?null:'new';S.editing=false;render(true);return}
   if(d.vedit){S.vehEdit=S.vehEdit===d.vedit?null:d.vedit;S.editing=false;render(true);return}
+  if(d.photorm){S.photoDraft[d.photorm]=null;render(true);return}
   if(d.vcancel){S.vehEdit=null;S.editing=false;render(true);return}
   if(d.varch){const v=clone(S.vehicles[d.varch]);v.status=v.status==='archived'?'active':'archived';delete v.id;await put('vehicles/'+d.varch,v);return}
   if(d.vsave){const p=d.vsave;const isNew=p==='vnew';const id=isNew?uid('v'):p.slice(2);const v=isNew?{status:'active',slot:Math.min(8,V().length+1)}:clone(S.vehicles[id]);delete v.id;
-    for(const [k,,t] of VF){const x=$('#'+p+'-'+k).value.trim();v[k]=x===''?null:(t==='number'?Number(x):x)}v.notes=$('#'+p+'-notes').value.trim()||null;
+    for(const [k,,t] of VF){const x=$('#'+p+'-'+k).value.trim();v[k]=x===''?null:(t==='number'?Number(x):x)}v.notes=$('#'+p+'-notes').value.trim()||null;if(S.photoDraft[p]!==undefined){v.photo=S.photoDraft[p];if(v.photo)v.view='photo';delete S.photoDraft[p]}
     if(!v.brand&&!v.model){toast('برند یا مدل را وارد کنید.','bad');return}
     S.editing=false;if(await put('vehicles/'+id,v))S.vehEdit=null;render(true);return}
 });
