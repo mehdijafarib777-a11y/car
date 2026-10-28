@@ -1,0 +1,1044 @@
+<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="پایش خودرو"><meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#1a1f1c" media="(prefers-color-scheme: dark)"><meta name="robots" content="noindex"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./icons/apple-touch-icon.png"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style><script>/* Standalone (home-screen) build: provides the same claude.use() API the page uses inside Claude,
+   backed by this phone's own storage. Data never leaves the device. */
+(function () {
+  var KEY = 'car-monitoring-db-v1';
+  var D = {};
+  try { D = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { D = {}; }
+  var subsC = {}, subsD = {};
+  var saveTimer = null;
+  function persist() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(function () {
+      try { localStorage.setItem(KEY, JSON.stringify(D)); }
+      catch (e) { window.dispatchEvent(new CustomEvent('local-save-failed')); }
+    }, 150);
+  }
+  function copy(o) { return o === undefined ? undefined : JSON.parse(JSON.stringify(o)); }
+  function split(p) { var i = p.lastIndexOf('/'); return [p.slice(0, i), p.slice(i + 1)]; }
+  var META = { fromCache: false, hasPendingWrites: false };
+  function snapDoc(id, d) { return { id: id, exists: d !== undefined, data: function () { return copy(d); }, metadata: META }; }
+  function qsnap(c) {
+    var m = D[c] || {};
+    var docs = Object.keys(m).sort().map(function (k) { return snapDoc(k, m[k]); });
+    return { docs: docs, size: docs.length, empty: !docs.length, docChanges: function () { return []; }, metadata: META };
+  }
+  function emitAll() {
+    Object.keys(subsC).forEach(function (c) { (subsC[c] || []).forEach(function (cb) { cb(qsnap(c)); }); });
+    Object.keys(subsD).forEach(function (p) { var s = split(p); (subsD[p] || []).forEach(function (cb) { cb(snapDoc(s[1], (D[s[0]] || {})[s[1]])); }); });
+  }
+  function emit(c, id) {
+    (subsC[c] || []).forEach(function (cb) { cb(qsnap(c)); });
+    (subsD[c + '/' + id] || []).forEach(function (cb) { cb(snapDoc(id, (D[c] || {})[id])); });
+  }
+  function write(op, path, data) {
+    var s = split(path), c = s[0], id = s[1];
+    D[c] = D[c] || {};
+    if (op === 'delete') delete D[c][id]; else D[c][id] = data;
+    persist();
+    setTimeout(function () { emit(c, id); }, 0);
+  }
+  var db = {
+    collection: function (c) {
+      return {
+        onSnapshot: function (cb) {
+          (subsC[c] = subsC[c] || []).push(cb);
+          setTimeout(function () { cb(qsnap(c)); }, 0);
+          return function () { subsC[c] = (subsC[c] || []).filter(function (x) { return x !== cb; }); };
+        },
+        get: function () { return Promise.resolve(qsnap(c)); },
+        doc: function (id) { return db.doc(c + '/' + id); }
+      };
+    },
+    doc: function (p) {
+      var s = split(p), c = s[0], id = s[1];
+      return {
+        id: id, path: p,
+        onSnapshot: function (cb) {
+          (subsD[p] = subsD[p] || []).push(cb);
+          setTimeout(function () { cb(snapDoc(id, (D[c] || {})[id])); }, 0);
+          return function () { subsD[p] = (subsD[p] || []).filter(function (x) { return x !== cb; }); };
+        },
+        get: function () { return Promise.resolve(snapDoc(id, (D[c] || {})[id])); },
+        set: function (data) { write('set', p, copy(data)); return Promise.resolve(); },
+        update: function (data) {
+          var cur = (D[c] || {})[id];
+          if (!cur) return Promise.reject({ code: 'invalid_argument', message: 'document does not exist' });
+          var next = copy(cur), patch = copy(data);
+          Object.keys(patch).forEach(function (k) { next[k] = patch[k]; });
+          write('set', p, next); return Promise.resolve();
+        },
+        delete: function () { write('delete', p); return Promise.resolve(); }
+      };
+    }
+  };
+
+  var MIME = { json: 'application/json', csv: 'text/csv', html: 'text/html', xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' };
+  /* Files go to the iPhone share sheet (Save to Files, AirDrop, Mail…); desktop browsers download them. */
+  var downloads = {
+    save: function (req) {
+      var ext = (req.filename.split('.').pop() || '').toLowerCase();
+      var blob = req.data instanceof Blob ? req.data : new Blob([req.data], { type: MIME[ext] || 'application/octet-stream' });
+      var file = null;
+      try { file = new File([blob], req.filename, { type: MIME[ext] || blob.type }); } catch (e) {}
+      if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+        return navigator.share({ files: [file] }).then(function () { return { status: 'saved' }; }, function (e) {
+          if (e && e.name === 'AbortError') throw { code: 'declined', message: 'cancelled' };
+          if (e && e.name === 'NotAllowedError') throw { code: 'rate_limited', message: 'tap again' };
+          throw { code: 'unavailable', message: String(e) };
+        });
+      }
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url; a.download = req.filename; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+      return Promise.resolve({ status: 'saved' });
+    }
+  };
+
+  window.__localStore = {
+    snapshot: function () { return copy(D); },
+    replace: function (data) {
+      D = copy(data) || {};
+      try { localStorage.setItem(KEY, JSON.stringify(D)); } catch (e) { return false; }
+      emitAll(); return true;
+    },
+    isEmpty: function () { return !Object.keys(D.vehicles || {}).length && !Object.keys(D.events || {}).length; }
+  };
+  window.claude = {
+    use: function (name) {
+      if (name === 'db') return Promise.resolve(db);
+      if (name === 'downloads') return Promise.resolve(downloads);
+      return Promise.resolve(null);
+    }
+  };
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+    window.addEventListener('load', function () { navigator.serviceWorker.register('./sw.js').catch(function () {}); });
+  }
+})();
+</script></head><body><title>پایش خودرو</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800&display=swap">
+<style>
+/* Layout: one phone-width column (max 560px, centred on larger screens); compact sticky header, fixed bottom tab bar with a raised "add" button; every section stacks in one column. */
+:root{
+  --bg:#f2f3f0; --surface:#ffffff; --surface-2:#e8eae5; --ink:#18201c; --muted:#58635d; --line:#d4d9d1;
+  --accent:#33369c; --accent-ink:#ffffff; --accent-soft:#e6e6f6;
+  --good:#1b7443; --good-soft:#e1f1e7; --warn:#9a5b00; --warn-soft:#fbefd9; --bad:#b0251d; --bad-soft:#fbe4e1;
+  --v1:#2a78d6; --v2:#eb6834; --v3:#1baf7a; --v4:#eda100; --v5:#e87ba4; --v6:#008300; --v7:#6250d6; --v8:#e34948;
+  --font:"Vazirmatn",Tahoma,"Segoe UI",system-ui,sans-serif;
+  --r:14px; --col:560px; --navh:64px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121614; --surface:#1a1f1c; --surface-2:#232a26; --ink:#e8ece9; --muted:#a2aca6; --line:#323a35;
+  --accent:#aeadf3; --accent-ink:#17183f; --accent-soft:#272a4a;
+  --good:#63c48f; --good-soft:#1c3226; --warn:#e2a84d; --warn-soft:#3a2d14; --bad:#f08b83; --bad-soft:#3c1d1a;
+  --v1:#3987e5; --v2:#d95926; --v3:#199e70; --v4:#c98500; --v5:#d55181; --v6:#008300; --v7:#9085e9; --v8:#e66767;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121614; --surface:#1a1f1c; --surface-2:#232a26; --ink:#e8ece9; --muted:#a2aca6; --line:#323a35;
+  --accent:#aeadf3; --accent-ink:#17183f; --accent-soft:#272a4a;
+  --good:#63c48f; --good-soft:#1c3226; --warn:#e2a84d; --warn-soft:#3a2d14; --bad:#f08b83; --bad-soft:#3c1d1a;
+  --v1:#3987e5; --v2:#d95926; --v3:#199e70; --v4:#c98500; --v5:#d55181; --v6:#008300; --v7:#9085e9; --v8:#e66767;
+  color-scheme:dark}
+html,body{background:var(--bg);color:var(--ink)}
+body{font-family:var(--font);font-size:15px;line-height:1.65;-webkit-tap-highlight-color:transparent}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+*{box-sizing:border-box}
+#app{direction:rtl;min-height:100%;max-width:var(--col);margin:0 auto}
+.num,.odo{font-variant-numeric:tabular-nums}
+h1,h2,h3{margin:0;line-height:1.35;text-wrap:balance}
+h2{font-size:1.2rem;font-weight:800}
+h3{font-size:1rem;font-weight:700}
+a{color:var(--accent)}
+.muted{color:var(--muted)}
+small,.small{font-size:.82rem}
+
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.top-in,.wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.top-in{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-block:8px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand b{font-size:1.08rem;font-weight:800;display:block;line-height:1.25}
+.brand svg{flex:none}
+.sync{font-size:.74rem;color:var(--muted);display:flex;align-items:center;gap:5px}
+.sync i{width:7px;height:7px;border-radius:50%;background:var(--muted);display:inline-block}
+.sync.on i{background:var(--good)} .sync.off i{background:var(--bad)}
+.top-actions{display:flex;gap:4px}
+.icon-btn{width:42px;height:42px;display:grid;place-items:center;border-radius:12px;color:var(--muted);text-decoration:none}
+.icon-btn svg{width:22px;height:22px}
+.icon-btn[aria-current="page"]{background:var(--accent-soft);color:var(--accent)}
+
+/* bottom tab bar */
+.bottom{position:fixed;z-index:6;bottom:0;left:50%;transform:translateX(-50%);width:min(100%,var(--col));background:var(--surface);border-top:1px solid var(--line);
+  display:grid;grid-template-columns:repeat(5,1fr);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+.bottom a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:var(--navh);text-decoration:none;color:var(--muted);font-size:.7rem;font-weight:500}
+.bottom a svg{width:23px;height:23px}
+.bottom a[aria-current="page"]{color:var(--accent);font-weight:800}
+.bottom a.fab span.ring{width:50px;height:50px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:var(--accent-ink);margin-top:-22px;border:4px solid var(--surface)}
+.bottom a.fab svg{width:24px;height:24px}
+.bottom a:focus-visible,.icon-btn:focus-visible{outline:2px solid var(--accent);outline-offset:-3px}
+
+.wrap{padding-block:16px calc(var(--navh) + 28px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:18px}
+.view-head{display:flex;flex-direction:column;gap:6px}
+.view-head p{margin:0;color:var(--muted);font-size:.88rem}
+.section{display:flex;flex-direction:column;gap:10px;min-width:0}
+.section-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.foot{font-size:.74rem;color:var(--muted);border-top:1px dashed var(--line);padding-top:8px;display:flex;flex-direction:column;gap:2px}
+.cols,.cols-2,.vgrid{display:flex;flex-direction:column;gap:14px;min-width:0}
+
+/* vehicle switcher */
+.vswitch{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}
+.vswitch::-webkit-scrollbar{display:none}
+.vswitch button{font:inherit;font-size:.88rem;display:inline-flex;align-items:center;gap:7px;white-space:nowrap;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:7px 14px;min-height:40px;cursor:pointer}
+.vswitch button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink);font-weight:700}
+
+/* vehicle cards */
+.vcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.vcard.arch{border-style:dashed}
+.vhead{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap}
+.vname{display:flex;align-items:center;gap:8px}
+.dot{width:11px;height:11px;border-radius:50%;flex:none;display:inline-block}
+.vname h3{font-size:1.05rem}
+.vmeta{font-size:.78rem;color:var(--muted)}
+.odo-row{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+.odo{display:inline-flex;direction:ltr;gap:3px;background:var(--ink);padding:5px;border-radius:8px}
+.odo span{display:inline-block;min-width:1.45em;text-align:center;background:var(--surface);color:var(--ink);font-weight:800;font-size:1.45rem;line-height:1.45;border-radius:4px}
+.odo span.lead{color:var(--muted);font-weight:500}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 14px}
+.stat{display:flex;flex-direction:column;min-width:0}
+.stat .k{font-size:.76rem;color:var(--muted)}
+.stat .v{font-weight:800;font-size:1.05rem}
+.stat .s{font-size:.72rem;color:var(--muted)}
+.spark{width:100%;height:44px;display:block}
+
+/* chips & pills */
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:.7rem;line-height:1.6;padding:0 7px;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap;vertical-align:middle}
+.chip::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.chip.user{color:var(--ink);background:var(--surface-2);border-color:transparent}
+.chip.user::before{background:var(--ink)}
+.chip.ext{color:var(--accent);border-color:var(--accent)}
+.chip.ext::before{background:transparent;border:1.5px solid currentColor;width:5px;height:5px}
+.chip.approx,.chip.unconf{border-style:dashed;color:var(--warn);border-color:var(--warn)}
+.chip.approx::before,.chip.unconf::before{background:transparent;border:1.5px dashed currentColor;width:5px;height:5px}
+.chip.calc{color:var(--muted)}
+.chip.calc::before{border-radius:1px;transform:rotate(45deg)}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:.76rem;font-weight:700;padding:2px 10px;border-radius:999px;white-space:nowrap}
+.pill svg{width:12px;height:12px}
+.pill.good{background:var(--good-soft);color:var(--good)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.pill.neutral{background:var(--surface-2);color:var(--muted)}
+
+/* lists */
+.list{display:flex;flex-direction:column}
+.li{display:flex;gap:10px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--line)}
+.li:last-child{border-bottom:0}
+.li .body{flex:1;min-width:0}
+.li .t{font-weight:700}
+.li .d{font-size:.82rem;color:var(--muted)}
+.li .why{font-size:.78rem;color:var(--muted);margin-top:2px}
+.li-top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;flex-wrap:wrap}
+.timeline .li{position:relative;padding-inline-start:18px}
+.timeline .li::before{content:"";position:absolute;inset-inline-start:4px;top:19px;width:8px;height:8px;border-radius:50%;background:var(--vc,var(--muted))}
+.timeline .li::after{content:"";position:absolute;inset-inline-start:7.5px;top:29px;bottom:-11px;width:1px;background:var(--line)}
+.timeline .li:last-child::after{display:none}
+.empty{padding:18px;border:1px dashed var(--line);border-radius:var(--r);color:var(--muted);text-align:center;font-size:.9rem}
+
+/* event rows (history, fills) */
+.evlist{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.ev{border-bottom:1px solid var(--line)}
+.ev:last-child{border-bottom:0}
+.ev-main{font:inherit;color:inherit;text-align:right;width:100%;background:none;border:0;display:flex;gap:10px;align-items:flex-start;padding:12px 14px;cursor:pointer;min-height:56px}
+.ev-main .dot{margin-top:7px}
+.ev-body{flex:1;min-width:0}
+.ev-t{font-weight:700;font-size:.92rem}
+.ev-d{font-size:.78rem;color:var(--muted)}
+.ev-s{font-size:.84rem;overflow-wrap:anywhere}
+.ev-amt{text-align:left;font-weight:700;font-size:.88rem;white-space:nowrap;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.ev.open{background:var(--accent-soft)}
+.ev-more{padding:0 14px 12px 14px;display:flex;flex-direction:column;gap:10px}
+.detail{font-size:.8rem;color:var(--muted);display:flex;flex-direction:column;gap:3px}
+
+/* controls */
+.btn{font:inherit;font-size:.9rem;font-weight:700;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 16px;min-height:42px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;text-decoration:none}
+.btn:active{background:var(--surface-2)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.danger{color:var(--bad);border-color:var(--bad)}
+.btn.sm{font-size:.8rem;padding:4px 12px;min-height:34px}
+.btn.block{width:100%}
+.btn.link{border:0;background:none;color:var(--accent);padding:0 4px;min-height:34px}
+.btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.ev-main:focus-visible,.vswitch button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.seg{display:flex;gap:4px;background:var(--surface-2);padding:3px;border-radius:12px;overflow-x:auto;scrollbar-width:none}
+.seg::-webkit-scrollbar{display:none}
+.seg button{font:inherit;font-size:.86rem;border:0;background:none;color:var(--muted);padding:6px 12px;min-height:38px;border-radius:9px;cursor:pointer;font-weight:500;white-space:nowrap;flex:1 0 auto}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);font-weight:800;box-shadow:0 0 0 1px var(--line)}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end}
+.bar.end{justify-content:flex-start}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field label{font-size:.8rem;color:var(--muted);font-weight:500}
+.field .hint{font-size:.74rem;color:var(--muted)}
+input,select,textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 12px;min-height:46px;min-width:0;width:100%}
+input[type=checkbox]{width:22px;height:22px;min-height:0;accent-color:var(--accent)}
+textarea{min-height:76px;resize:vertical}
+input[type=number],input[type=date]{direction:ltr;text-align:right}
+.fgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.fgrid .wide{grid-column:1/-1}
+@media (max-width:359px){.fgrid{grid-template-columns:minmax(0,1fr)}}
+.checks{display:flex;flex-wrap:wrap;gap:8px}
+.checks label{display:inline-flex;align-items:center;gap:8px;font-size:.9rem;color:var(--ink);background:var(--surface-2);padding:6px 12px;border-radius:10px;min-height:40px}
+.req{color:var(--bad)}
+.savebar{position:sticky;bottom:calc(var(--navh) + env(safe-area-inset-bottom,0px) + 8px);display:flex;gap:8px;z-index:4}
+.savebar .btn{flex:1;min-height:48px;box-shadow:0 4px 14px rgba(0,0,0,.12)}
+
+.issues{border-radius:var(--r);padding:12px 14px;display:flex;flex-direction:column;gap:8px;font-size:.88rem}
+.issues.conflict{background:var(--warn-soft);border:1px solid var(--warn)}
+.issues.error{background:var(--bad-soft);border:1px solid var(--bad)}
+.issues.info{background:var(--surface-2)}
+.issues ul{margin:0;padding-inline-start:18px}
+
+/* charts */
+.chart svg{display:block;width:100%;height:auto;direction:ltr;touch-action:pan-y}
+.chart text{fill:var(--muted);font-family:var(--font);font-size:10px}
+.chart .grid line{stroke:var(--line);stroke-width:1}
+.chart .axis{stroke:var(--muted);stroke-width:1}
+.chart-cap{font-size:.76rem;color:var(--muted)}
+.chart-read{font-size:.82rem;min-height:1.4em;color:var(--ink)}
+.hbars{display:flex;flex-direction:column;gap:10px}
+.hbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:center;font-size:.86rem}
+.hbar .track{grid-column:1/-1;height:10px;background:var(--surface-2);border-radius:4px;overflow:hidden}
+.hbar .fill{height:100%;background:var(--accent);border-radius:4px 0 0 4px}
+.kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.kpi .k{font-size:.74rem;color:var(--muted)}
+.kpi .v{font-size:1.12rem;font-weight:800;overflow-wrap:anywhere}
+.kpi .s{font-size:.7rem;color:var(--muted)}
+
+.rcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.rcard dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:.84rem}
+.rcard dt{color:var(--muted)}
+.rcard dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.figs{margin:0;padding-inline-start:18px;font-size:.86rem}
+
+.tip{position:fixed;z-index:30;pointer-events:none;background:var(--ink);color:var(--bg);font-size:.8rem;padding:6px 9px;border-radius:8px;max-width:240px;direction:rtl;line-height:1.5}
+.toast{position:fixed;z-index:40;bottom:calc(var(--navh) + 16px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:12px;font-size:.88rem;max-width:calc(100% - 32px)}
+.toast.bad{background:var(--bad);color:#fff}
+.notice{background:var(--surface-2);border-radius:var(--r);padding:12px 14px;font-size:.88rem}
+@media (prefers-reduced-motion:no-preference){.btn,.seg button,.ev-main{transition:background .15s}}
+</style>
+
+<div id="app" lang="fa" dir="rtl">
+  <header class="top">
+    <div class="top-in">
+      <div class="brand">
+        <svg width="32" height="32" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="15" fill="none" stroke="var(--ink)" stroke-width="2"/><path d="M6.5 22a11 11 0 0 1 21 0" fill="none" stroke="var(--line)" stroke-width="3" stroke-linecap="round"/><path d="M6.5 22a11 11 0 0 1 13-9.6" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/><line x1="17" y1="21" x2="22.5" y2="13" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"/><circle cx="17" cy="21" r="2" fill="var(--ink)"/></svg>
+        <div><b>پایش خودرو</b><div class="sync" id="sync"><i></i><span>در حال اتصال…</span></div></div>
+      </div>
+      <nav class="top-actions" aria-label="بیشتر">
+        <a href="#research" class="icon-btn" data-nav aria-label="تحقیقات"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/><path d="M9 8h7M9 12h5"/></svg></a>
+        <a href="#prefs" class="icon-btn" data-nav aria-label="تنظیمات"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1"/></svg></a>
+      </nav>
+    </div>
+  </header>
+  <main class="wrap" id="main"><div class="empty">داده‌ها در حال بارگذاری است. سوخت‌گیری‌ها، سرویس‌ها و یادآوری‌های خودروهای شما اینجا نمایش داده می‌شوند.</div></main>
+  <nav class="bottom" aria-label="بخش‌ها">
+    <a href="#dashboard" data-nav><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3.5 16a8.5 8.5 0 1 1 17 0"/><path d="M12 16l4-5"/><circle cx="12" cy="16" r="1.4" fill="currentColor"/><path d="M3 20h18"/></svg>داشبورد</a>
+    <a href="#history" data-nav><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>تاریخچه</a>
+    <a href="#add" data-nav class="fab" aria-label="ثبت رویداد"><span class="ring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>ثبت</a>
+    <a href="#reports" data-nav><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/></svg>گزارش</a>
+    <a href="#service" data-nav><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg>سرویس</a>
+  </nav>
+</div>
+<div id="tip" class="tip" hidden></div>
+<div id="toast" class="toast" hidden></div>
+
+<script>
+"use strict";
+/* ---------- constants ---------- */
+const TYPES={fuel:'سوخت‌گیری',service:'سرویس',repair:'تعمیر',accident:'تصادف',expense:'هزینه',document:'مدرک',odometer:'ثبت کیلومتر'};
+const CUR={TRY:'لیر',USD:'دلار',EUR:'یورو',IRR:'ریال'};
+const FUELS=['بنزین','دیزل','LPG','هیبرید','برقی'];
+const DOCTYPES=['بیمه ترافیک (Trafik)','بیمه کاسکو (Kasko)','معاینه فنی (TÜVTÜRK)','کارت خودرو (Ruhsat)','گواهینامه راننده','سایر'];
+const ROUTES=['dashboard','add','history','reports','service','research','prefs'];
+const STATE_UI={overdue:['bad','سررسید گذشته'],soon:['warn','نزدیک'],ok:['good','در موعد'],missing:['neutral','بدون سابقه']};
+const ICON={bad:'<svg viewBox="0 0 12 12"><path d="M6 1 11 10H1z" fill="currentColor"/></svg>',warn:'<svg viewBox="0 0 12 12"><circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 3v3.5" stroke="currentColor" stroke-width="2"/></svg>',good:'<svg viewBox="0 0 12 12"><path d="M2 6.5 5 9l5-6" fill="none" stroke="currentColor" stroke-width="2"/></svg>',neutral:'<svg viewBox="0 0 12 12"><circle cx="6" cy="6" r="4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="2 1.6"/></svg>'};
+
+const S={db:null,assets:null,downloads:null,vehicles:{},events:{},rules:{},research:{},settings:null,
+  loaded:{vehicles:false,events:false,rules:false,research:false,settings:false},
+  route:'dashboard',editing:false,pending:false,
+  dashArch:false,dashVeh:'all',
+  form:{type:'fuel',editId:null,confirm:false,issues:null},
+  hist:{q:'',veh:'all',type:'all',from:'',to:'',sort:'date',dir:'desc',open:null,delAsk:null,showF:false},
+  rep:{veh:null,range:'all',from:'',to:''},
+  ruleEdit:null,addRule:false,vehEdit:null};
+
+/* ---------- helpers ---------- */
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fa=(n,d=0)=>(n==null||Number.isNaN(+n))?'—':Number(n).toLocaleString('fa-IR',{maximumFractionDigits:d});
+const parseD=s=>{const [y,m,d]=String(s).split('-').map(Number);return new Date(y,(m||1)-1,d||1)};
+const iso=dt=>dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');
+const todayISO=()=>iso(new Date());
+const cal=()=>(S.settings&&S.settings.calendar==='persian')?'persian':'gregory';
+const _fm={};function fmtr(loc,opt){const k=loc+JSON.stringify(opt);return _fm[k]||(_fm[k]=new Intl.DateTimeFormat(loc,opt))}
+function fmtDate(s,opt){if(!s)return '—';try{return fmtr('fa-IR-u-ca-'+cal(),opt||{year:'numeric',month:'short',day:'numeric'}).format(parseD(s))}catch(e){return s}}
+function fmtStamp(s){if(!s)return '—';try{return fmtr('fa-IR-u-ca-'+cal(),{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}).format(new Date(s))}catch(e){return s}}
+const curDefault=()=>(S.settings&&S.settings.currency)||'TRY';
+const money=(n,c,d=0)=>n==null?'—':fa(n,d)+' '+(CUR[c]||c||'');
+const daysBetween=(a,b)=>Math.round((parseD(b)-parseD(a))/864e5);
+function addMonths(s,m){const d=parseD(s);const day=d.getDate();d.setDate(1);d.setMonth(d.getMonth()+m);const last=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();d.setDate(Math.min(day,last));return iso(d)}
+function calParts(s){const p=fmtr('en-US-u-ca-'+cal()+'-nu-latn',{year:'numeric',month:'numeric',day:'numeric'}).formatToParts(parseD(s));const g=t=>+String((p.find(x=>x.type===t)||{}).value||'').replace(/\D/g,'');return {y:g('year'),m:g('month'),d:g('day')}}
+function startOfYear(){const t=new Date();if(cal()==='gregory')return t.getFullYear()+'-01-01';const d=new Date(t);for(let i=0;i<370;i++){const p=calParts(iso(d));if(p.m===1&&p.d===1)return iso(d);d.setDate(d.getDate()-1)}return iso(t)}
+function startOfMonth(){const t=new Date();if(cal()==='gregory')return iso(new Date(t.getFullYear(),t.getMonth(),1));const d=new Date(t);for(let i=0;i<32;i++){if(calParts(iso(d)).d===1)return iso(d);d.setDate(d.getDate()-1)}return iso(t)}
+const uid=p=>p+'-'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const clone=o=>JSON.parse(JSON.stringify(o||{}));
+function pill(state,txt){const [k,label]=STATE_UI[state]||['neutral',state];return `<span class="pill ${k}">${ICON[k]}${esc(txt||label)}</span>`}
+function toast(msg,kind){const t=$('#toast');t.textContent=msg;t.className='toast'+(kind?' '+kind:'');t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>t.hidden=true,2600)}
+
+/* ---------- data access ---------- */
+const V=()=>Object.values(S.vehicles).sort((a,b)=>(a.slot||9)-(b.slot||9));
+const activeV=()=>V().filter(v=>v.status!=='archived');
+const evs=vid=>Object.values(S.events).filter(e=>!vid||vid==='all'||e.vehicleId===vid);
+const sortEv=(a,b)=>a.date<b.date?-1:a.date>b.date?1:((a.km??-1)-(b.km??-1));
+const vname=v=>v?(v.short||((v.brand||'')+' '+(v.model||'')).trim()):'—';
+const vcol=v=>'var(--v'+((v&&v.slot)||1)+')';
+const vById=id=>S.vehicles[id];
+function odo(vid){let b=null;for(const e of evs(vid))if(e.km!=null&&(!b||e.km>b.km))b=e;return b}
+function amt(e){switch(e.type){
+  case 'fuel':return e.total!=null?e.total:(e.liters!=null&&e.ppl!=null?e.liters*e.ppl:null);
+  case 'service':case 'repair':return (e.labor==null&&e.partsCost==null)?null:(+e.labor||0)+(+e.partsCost||0);
+  case 'accident':case 'document':return e.cost??null;
+  case 'expense':return e.amount??null;default:return null}}
+function cat(e){return e.type==='expense'?(e.category||'سایر'):e.type==='document'?(e.docType||'مدرک'):TYPES[e.type]}
+function sumCur(list){const o={};for(const e of list){const a=amt(e);if(a==null)continue;const c=e.currency||curDefault();o[c]=(o[c]||0)+a}return o}
+function moneyMulti(o){const k=Object.keys(o);return k.length?k.map(c=>money(o[c],c)).join(' + '):'—'}
+const mainCur=o=>{const k=Object.keys(o);return k.length===1?k[0]:null};
+
+function fuelSeries(vid){
+  const fills=evs(vid).filter(e=>e.type==='fuel').sort(sortEv);
+  let lastKm=null,acc=0;const segs=[];
+  for(const f of fills){
+    if(f.km==null||!(f.liters>0)||(f.fullTank!==true&&f.fullTank!==false)){lastKm=null;acc=0;continue}
+    if(f.fullTank===false){if(lastKm!=null)acc+=f.liters;continue}
+    if(lastKm!=null&&f.km>lastKm){const dist=f.km-lastKm;segs.push({id:f.id,date:f.date,km:f.km,dist,liters:acc+f.liters,cons:(acc+f.liters)/dist*100})}
+    lastKm=f.km;acc=0}
+  return {fills,segs}}
+function consStats(segs){if(!segs.length)return null;const L=segs.reduce((s,x)=>s+x.liters,0),D=segs.reduce((s,x)=>s+x.dist,0);return {avg:L/D*100,n:segs.length,L,D,last:segs[segs.length-1]}}
+
+/* reminders */
+function ruleStatus(r){
+  const cur=odo(r.vehicleId);
+  const hist=evs(r.vehicleId).filter(e=>(e.type==='service'||e.type==='repair')&&(e.kinds||[]).includes(r.matchKind)).sort(sortEv);
+  const last=hist[hist.length-1];
+  if(!last)return {state:'missing',reason:`هیچ «${r.matchKind}» برای این خودرو ثبت نشده است. برای شروع یادآوری، آخرین انجام آن را در «ثبت رویداد» وارد کنید.`};
+  const dueDate=r.intervalMonths?addMonths(last.date,+r.intervalMonths):null;
+  const dueKm=(r.intervalKm&&last.km!=null)?last.km+ +r.intervalKm:null;
+  const t=todayISO();const dLeft=dueDate?daysBetween(t,dueDate):null;const kLeft=(dueKm!=null&&cur)?dueKm-cur.km:null;
+  let state='ok';
+  if((dLeft!=null&&dLeft<0)||(kLeft!=null&&kLeft<=0))state='overdue';
+  else if((r.warnDays!=null&&dLeft!=null&&dLeft<=r.warnDays)||(r.warnKm!=null&&kLeft!=null&&kLeft<=r.warnKm))state='soon';
+  const approx=(last.approx||[]).includes('km');
+  const iv=[r.intervalMonths?fa(r.intervalMonths)+' ماه':null,r.intervalKm?fa(r.intervalKm)+' کیلومتر':null].filter(Boolean).join(' یا ');
+  let reason=`بر اساس «${r.matchKind}» ثبت‌شده در ${fmtDate(last.date)}${last.km!=null?' در '+fa(last.km)+' کیلومتر'+(approx?' (تقریبی)':''):''} و فاصله ${iv}${r.intervalMonths&&r.intervalKm?'، هر کدام زودتر':''} که شما تأیید کرده‌اید.`;
+  const parts=[];if(dueDate)parts.push(`موعد تاریخی: ${fmtDate(dueDate)} (${dLeft<0?fa(-dLeft)+' روز گذشته':fa(dLeft)+' روز مانده'})`);
+  if(dueKm!=null)parts.push(`موعد کیلومتری: ${fa(dueKm)} (${kLeft==null?'کیلومتر فعلی ثبت نشده':kLeft<=0?fa(-kLeft)+' کیلومتر گذشته':fa(kLeft)+' کیلومتر مانده'})`);
+  return {state,last,dueDate,dueKm,dLeft,kLeft,noWarn:r.warnDays==null&&r.warnKm==null,reason,parts}}
+function latestDocs(vid){const m={};for(const e of evs(vid).filter(e=>e.type==='document'&&e.expiry)){const k=e.vehicleId+'|'+e.docType;if(!m[k]||m[k].expiry<e.expiry)m[k]=e}return Object.values(m)}
+function docStatus(e){const w=S.settings?S.settings.docWarnDays:null;const dLeft=daysBetween(todayISO(),e.expiry);
+  const state=dLeft<0?'overdue':(w!=null&&dLeft<=w)?'soon':'ok';
+  return {state,dLeft,noWarn:w==null,reason:`انقضای ${e.docType} در ${fmtDate(e.expiry)} طبق مدرک ثبت‌شده در ${fmtDate(e.date)}${w!=null?'؛ هشدار از '+fa(w)+' روز قبل (تنظیم شما)':''}.`}}
+function allReminders(vid){
+  const out=[];
+  for(const r of Object.values(S.rules)){if(r.status!=='active')continue;const v=vById(r.vehicleId);if(!v||v.status==='archived')continue;if(vid&&vid!=='all'&&r.vehicleId!==vid)continue;
+    const st=ruleStatus(r);out.push({kind:'rule',v,title:r.item,st,r})}
+  for(const v of activeV()){if(vid&&vid!=='all'&&v.id!==vid)continue;for(const d of latestDocs(v.id))out.push({kind:'doc',v,title:d.docType,st:docStatus(d),e:d})}
+  const rank={overdue:0,soon:1,missing:2,ok:3};
+  return out.sort((a,b)=>rank[a.st.state]-rank[b.st.state]||((a.st.dLeft??9e9)-(b.st.dLeft??9e9)))}
+function missingInfo(){
+  const out=[];
+  for(const v of activeV()){
+    if(!v.purchaseDate)out.push({v,t:'تاریخ خرید ثبت نشده',go:'#prefs'});
+    if(!v.plate)out.push({v,t:'پلاک ثبت نشده (اختیاری)',go:'#prefs'});
+    const docs=latestDocs(v.id).map(d=>d.docType);
+    for(const dt of DOCTYPES.slice(0,3))if(!docs.includes(dt))out.push({v,t:`تاریخ انقضای ${dt} ثبت نشده`,go:'#add'});
+    for(const e of evs(v.id).filter(e=>(e.type==='service'||e.type==='repair')&&amt(e)==null))out.push({v,t:`هزینه ${TYPES[e.type]} ${fmtDate(e.date)} ثبت نشده`,go:'#history'});
+  }
+  if(S.settings&&S.settings.docWarnDays==null)out.push({v:null,t:'تعیین نشده که چند روز پیش از انقضای مدارک هشدار داده شود',go:'#service'});
+  for(const r of Object.values(S.rules))if(r.status==='suggested')out.push({v:vById(r.vehicleId),t:`برنامه «${r.item}» منتظر تأیید شماست`,go:'#service'});
+  for(const r of Object.values(S.rules))if(r.status==='active'&&r.warnDays==null&&r.warnKm==null)out.push({v:vById(r.vehicleId),t:`آستانه هشدار «${r.item}» تعیین نشده`,go:'#service'});
+  return out}
+const maxUpd=list=>list.reduce((m,x)=>x&&x.updatedAt&&x.updatedAt>m?x.updatedAt:m,'');
+function srcChip(e){
+  if(e.source==='import')return `<span class="chip user" title="${esc(e.importRef||'')}">ثبت شما · فایل</span>`;
+  if(e.source==='chat')return `<span class="chip user" title="گفته‌شده توسط شما در گفتگو">ثبت شما · گفتگو</span>`;
+  return `<span class="chip user">ثبت شما</span>`}
+const approxChip=(e,f)=>(e.approx||[]).includes(f)?' <span class="chip approx">تقریبی</span>':'';
+
+/* ---------- db ---------- */
+async function put(path,data,msg){data.updatedAt=new Date().toISOString();try{await S.db.doc(path).set(data);if(msg!==false)toast(msg||'ذخیره شد');return true}catch(e){toast(dbErr(e),'bad');return false}}
+async function patch(path,data,msg){data.updatedAt=new Date().toISOString();try{await S.db.doc(path).update(data);if(msg!==false)toast(msg||'ذخیره شد');return true}catch(e){toast(dbErr(e),'bad');return false}}
+async function remove(path){try{await S.db.doc(path).delete();toast('حذف شد');return true}catch(e){toast(dbErr(e),'bad');return false}}
+function dbErr(e){const c=e&&e.code;return c==='quota_exceeded'?'ظرفیت ذخیره‌سازی پر است؛ چند رکورد قدیمی را حذف کنید.':c==='invalid_argument'?'ذخیره نشد: اجازه نوشتن ندارید یا داده نامعتبر است.':c==='resource_exhausted'?'درخواست‌ها زیاد است؛ چند ثانیه بعد دوباره امتحان کنید.':'ذخیره نشد؛ اتصال را بررسی کنید و دوباره امتحان کنید.'}
+
+/* ---------- charts ---------- */
+function niceTicks(min,max,n){if(min===max){min-=1;max+=1}const s0=(max-min)/(n||4),mag=Math.pow(10,Math.floor(Math.log10(s0))),e=s0/mag,step=(e>=7.5?10:e>=3.5?5:e>=1.5?2:1)*mag;const lo=Math.floor(min/step)*step,hi=Math.ceil(max/step)*step,t=[];for(let v=lo;v<=hi+step/2;v+=step)t.push(+v.toFixed(8));return t}
+function timeTicks(t0,t1,n){const out=[];const span=t1-t0||1;for(let i=0;i<=n;i++)out.push(t0+span*i/n);return out}
+function lineChart(o){
+  const W=360,H=210,L=34,R=8,T=14,B=26;const pts=o.pts;if(pts.length<2)return `<div class="empty">${esc(o.empty||'برای رسم نمودار دست‌کم دو نقطه داده لازم است.')}</div>`;
+  const xs=pts.map(p=>parseD(p.date).getTime()),ys=pts.map(p=>p.y);
+  const t0=Math.min(...xs),t1=Math.max(...xs);const yt=niceTicks(Math.min(...ys,o.floor??Infinity),Math.max(...ys),4);const y0=yt[0],y1=yt[yt.length-1];
+  const X=t=>L+(t-t0)/((t1-t0)||1)*(W-L-R),Y=v=>T+(1-(v-y0)/((y1-y0)||1))*(H-T-B);
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.label)}"><g class="grid">`;
+  for(const v of yt)s+=`<line x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${L-6}" y="${Y(v)+4}" text-anchor="end">${fa(v,o.yd||0)}</text>`;
+  s+='</g>';
+  for(const t of timeTicks(t0,t1,3)){const d=iso(new Date(t));s+=`<text x="${X(t)}" y="${H-8}" text-anchor="${t===t0?'start':t===t1?'end':'middle'}">${fmtDate(d,{year:'2-digit',month:'short'})}</text>`}
+  s+=`<line class="axis" x1="${L}" x2="${W-R}" y1="${H-B}" y2="${H-B}"/>`;
+  if(o.avg!=null){s+=`<line x1="${L}" x2="${W-R}" y1="${Y(o.avg)}" y2="${Y(o.avg)}" stroke="var(--ink)" stroke-width="1" stroke-dasharray="4 4" opacity=".55"/><text x="${W-R}" y="${Y(o.avg)-5}" text-anchor="end" style="fill:var(--ink)">میانگین ${fa(o.avg,1)}</text>`}
+  const path=pts.map((p,i)=>(i?'L':'M')+X(xs[i]).toFixed(1)+','+Y(p.y).toFixed(1)).join('');
+  s+=`<path d="${path}" fill="none" stroke="${o.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+  pts.forEach((p,i)=>{const last=i===pts.length-1;s+=`<circle cx="${X(xs[i])}" cy="${Y(p.y)}" r="${last?4.5:2.6}" fill="${o.color}" stroke="var(--surface)" stroke-width="${last?2:1}"/><circle cx="${X(xs[i])}" cy="${Y(p.y)}" r="12" fill="transparent" data-tip="${esc(p.tip)}"/>`});
+  return s+'</svg>'}
+function barChart(o){
+  const W=360,H=200,L=40,R=6,T=12,B=26;const bars=o.bars;if(!bars.length)return `<div class="empty">${esc(o.empty||'داده‌ای برای این بازه نیست.')}</div>`;
+  const maxV=Math.max(...bars.map(b=>b.parts.reduce((s,p)=>s+p.v,0)),0);const yt=niceTicks(0,maxV||1,4);const y1=yt[yt.length-1];
+  const bw=(W-L-R)/bars.length;const Y=v=>T+(1-v/y1)*(H-T-B);
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.label)}"><g class="grid">`;
+  for(const v of yt)s+=`<line x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${L-6}" y="${Y(v)+4}" text-anchor="end">${fa(v)}</text>`;
+  s+='</g>';
+  const every=Math.ceil(bars.length/4);
+  bars.forEach((b,i)=>{let base=0;const x=L+i*bw+Math.max(1,bw*0.12),w=Math.max(2,bw*0.76);
+    b.parts.forEach((p,j)=>{if(!p.v)return;const y=Y(base+p.v),h=Y(base)-y;const top=j===b.parts.length-1||!b.parts.slice(j+1).some(q=>q.v);
+      s+=`<rect x="${x.toFixed(1)}" y="${(y+(base?1:0)).toFixed(1)}" width="${w.toFixed(1)}" height="${Math.max(0,h-(base?1:0)).toFixed(1)}" rx="${top?Math.min(4,w/2):0}" fill="${p.color}"/>`;base+=p.v});
+    s+=`<rect x="${(L+i*bw).toFixed(1)}" y="${T}" width="${bw.toFixed(1)}" height="${H-T-B}" fill="transparent" data-tip="${esc(b.tip)}"/>`;
+    if(i%every===0)s+=`<text x="${(L+i*bw+bw/2).toFixed(1)}" y="${H-8}" text-anchor="middle">${esc(b.label)}</text>`});
+  s+=`<line class="axis" x1="${L}" x2="${W-R}" y1="${H-B}" y2="${H-B}"/>`;
+  return s+'</svg>'}
+function sparkline(segs,color){if(segs.length<2)return '';const W=300,H=46,P=4;const ys=segs.map(s=>s.cons),mn=Math.min(...ys),mx=Math.max(...ys);const X=i=>P+i/(segs.length-1)*(W-2*P),Y=v=>P+(1-(v-mn)/((mx-mn)||1))*(H-2*P);
+  const d=segs.map((s,i)=>(i?'L':'M')+X(i).toFixed(1)+','+Y(s.cons).toFixed(1)).join('');const l=segs.length-1;
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="direction:ltr" aria-hidden="true"><path d="${d}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke"/><circle cx="${X(l)}" cy="${Y(segs[l].cons)}" r="3.5" fill="${color}"/></svg>`}
+
+/* ---------- views ---------- */
+function vehicleCard(v){
+  const o=odo(v.id);const {fills,segs}=fuelSeries(v.id);const st=consStats(segs);const lastFill=fills[fills.length-1];
+  const ys=startOfYear(),ms=startOfMonth();const yc=sumCur(evs(v.id).filter(e=>e.date>=ys)),mc=sumCur(evs(v.id).filter(e=>e.date>=ms));
+  const rem=allReminders(v.id);const worst=rem[0];
+  const digits=o?String(Math.round(o.km)).padStart(6,'0'):'------';let lead=true;
+  const odoHtml=[...digits].map(ch=>{const isLead=lead&&ch==='0';if(ch!=='0')lead=false;return `<span class="${isLead?'lead':''}">${ch==='-'?'–':fa(+ch)}</span>`}).join('');
+  const spec=[v.year?fa(v.year).replace(/٬/g,''):null,v.chassis,v.fuel,v.gearbox,v.market?'بازار '+v.market:null].filter(Boolean).join(' · ');
+  return `<article class="vcard${v.status==='archived'?' arch':''}">
+   <div class="vhead"><div><div class="vname"><span class="dot" style="background:${vcol(v)}"></span><h3>${esc((v.brand||'')+' '+(v.model||''))}</h3></div><div class="vmeta">${esc(spec)||'مشخصات ثبت نشده'}</div></div>
+   ${v.status==='archived'?'<span class="pill neutral">بایگانی · نمونه</span>':worst?pill(worst.st.state,worst.st.state==='ok'?'یادآوری‌ها در موعد':worst.title+': '+STATE_UI[worst.st.state][1]):'<span class="pill neutral">یادآوری فعال ندارد</span>'}</div>
+   <div class="odo-row"><span class="odo" aria-label="کیلومتر">${odoHtml}</span><span class="small muted">کیلومتر · آخرین ثبت ${o?fmtDate(o.date):'—'}${o&&(o.approx||[]).includes('km')?' (تقریبی)':''}</span></div>
+   <div class="stats">
+    <div class="stat"><span class="k">میانگین مصرف <span class="chip calc">محاسبه</span></span><span class="v">${st?fa(st.avg,1)+' <small>لیتر/۱۰۰ کیلومتر</small>':'—'}</span><span class="s">${st?'از '+fa(st.n)+' دوره باک‌پر، '+fa(st.D)+' کیلومتر':'دست‌کم دو سوخت‌گیری باک‌پر با کیلومتر لازم است'}</span></div>
+    <div class="stat"><span class="k">مصرف آخرین دوره</span><span class="v">${st?fa(st.last.cons,1):'—'}</span><span class="s">${st?fmtDate(st.last.date)+' · '+fa(st.last.dist)+' کیلومتر':''}</span></div>
+    <div class="stat"><span class="k">آخرین سوخت‌گیری</span><span class="v">${lastFill?fmtDate(lastFill.date):'—'}</span><span class="s">${lastFill?fa(lastFill.liters,2)+' لیتر · '+money(amt(lastFill),lastFill.currency):''}</span></div>
+    <div class="stat"><span class="k">هزینه ثبت‌شده ${cal()==='persian'?'سال جاری شمسی':'سال '+fa(new Date().getFullYear()).replace(/٬/g,'')}</span><span class="v">${moneyMulti(yc)}</span><span class="s">ماه جاری: ${moneyMulti(mc)}</span></div>
+   </div>
+   ${segs.length>1?`<div><div class="small muted">روند مصرف هر دوره باک‌پر</div>${sparkline(segs.slice(-24),vcol(v))}</div>`:''}
+  </article>`}
+function vDashboard(){
+  const pool=S.dashArch?V():activeV();if(S.dashVeh!=='all'&&!pool.some(v=>v.id===S.dashVeh))S.dashVeh='all';const dv=S.dashVeh;
+  const list=dv==='all'?pool:pool.filter(v=>v.id===dv);const rem=allReminders(dv);const miss=missingInfo().filter(m=>dv==='all'||!m.v||m.v.id===dv);
+  const recent=evs(dv).filter(e=>!vById(e.vehicleId)||vById(e.vehicleId).status!=='archived'||dv!=='all').sort(sortEv).reverse().slice(0,8);
+  const res=Object.values(S.research);const rc={confirmed:0,unconfirmed:0,rejected:0};res.forEach(r=>rc[r.status]=(rc[r.status]||0)+1);
+  const archN=V().length-activeV().length;
+  return `<div class="view-head"><h2>وضعیت خودروها</h2><p>اعداد از رکوردهای ثبت‌شده شما محاسبه شده‌اند. جایی که داده کافی نیست، کمبود نوشته شده است.</p></div>
+  <div class="vswitch" role="group" aria-label="انتخاب خودرو"><button type="button" data-dv="all" aria-pressed="${dv==='all'}">همه</button>${pool.map(v=>`<button type="button" data-dv="${v.id}" aria-pressed="${dv===v.id}"><span class="dot" style="background:${vcol(v)}"></span>${esc(vname(v))}</button>`).join('')}</div>
+  ${archN?`<div class="checks"><label><input type="checkbox" id="dash-arch" ${S.dashArch?'checked':''}> نمایش خودروی بایگانی‌شده</label></div>`:''}
+  <div class="vgrid">${list.map(vehicleCard).join('')||welcomePanel()}</div>
+  <div class="foot"><span>منبع: ثبت‌های شما (فایل بنزین.xlsx و گفتگو)</span><span>مصرف = لیتر ÷ مسافت بین دو سوخت‌گیری باک‌پر × ۱۰۰</span><span>به‌روزرسانی داده: ${fmtStamp(maxUpd(Object.values(S.events)))}</span></div>
+  <div class="cols">
+   <section class="panel"><div class="section-h"><h3>یادآوری‌ها</h3><a href="#service" class="small">برنامه سرویس</a></div>
+    ${rem.length?`<div class="list">${rem.map(x=>`<div class="li"><span class="dot" style="background:${vcol(x.v)};margin-top:9px"></span><div class="body"><div class="li-top"><span class="t">${esc(x.title)} · ${esc(vname(x.v))}</span>${pill(x.st.state)}</div>${x.st.parts?`<div class="d">${x.st.parts.map(esc).join(' · ')}</div>`:''}<div class="why">${esc(x.st.reason)}</div>${x.st.noWarn?'<div class="why">آستانه هشدار تعیین نشده؛ وضعیت «نزدیک» نمایش داده نمی‌شود.</div>':''}</div></div>`).join('')}</div>`
+     :'<div class="empty">هنوز یادآوری فعالی ندارید. برنامه‌های پیشنهادی سرویس در «سرویس و یادآوری» منتظر تأیید شما هستند.</div>'}
+    <div class="foot"><span>منبع: قوانینی که شما تأیید کرده‌اید + سرویس‌ها و مدارک ثبت‌شده</span><span>به‌روزرسانی: ${fmtStamp(maxUpd(Object.values(S.rules)))}</span></div></section>
+   <section class="panel"><div class="section-h"><h3>اطلاعات ناقص</h3><span class="small muted">${fa(miss.length)} مورد</span></div>
+    ${miss.length?`<div class="list">${miss.slice(0,9).map(m=>`<div class="li"><span class="dot" style="background:${m.v?vcol(m.v):'var(--muted)'};margin-top:9px"></span><div class="body"><div>${esc(m.t)}</div><div class="d">${m.v?esc(vname(m.v)):'همه خودروها'}</div></div><a class="btn sm" href="${m.go}">تکمیل</a></div>`).join('')}</div>${miss.length>9?`<div class="small muted">و ${fa(miss.length-9)} مورد دیگر</div>`:''}`:'<div class="empty">اطلاعات اصلی کامل است.</div>'}
+    <div class="foot"><span>این فهرست از مقایسه داده‌های ثبت‌شده با فیلدهای لازم ساخته می‌شود.</span></div></section>
+  </div>
+  <div class="cols">
+   <section class="panel"><div class="section-h"><h3>آخرین رویدادها</h3><a href="#history" class="small">همه تاریخچه</a></div>
+    ${recent.length?`<div class="list timeline">${recent.map(e=>{const v=vById(e.vehicleId);return `<div class="li" style="--vc:${vcol(v)}"><div class="body"><div class="t">${esc(TYPES[e.type])} · ${esc(vname(v))}</div><div class="d">${fmtDate(e.date)}${e.km!=null?' · '+fa(e.km)+' کیلومتر':''} · ${esc(describe(e))}</div></div><div class="num small" style="white-space:nowrap">${amt(e)!=null?money(amt(e),e.currency):''}</div></div>`}).join('')}</div>`:'<div class="empty">رویدادی ثبت نشده است.</div>'}
+   </section>
+   <section class="panel"><div class="section-h"><h3>منابع تحقیق‌شده</h3><a href="#research" class="small">جزئیات منابع</a></div>
+    <div class="stats"><div class="stat"><span class="k">تأییدنشده</span><span class="v">${fa(rc.unconfirmed||0)}</span></div><div class="stat"><span class="k">تأییدشده توسط شما</span><span class="v">${fa(rc.confirmed||0)}</span></div></div>
+    <p class="small muted" style="margin:0">اطلاعات منابع خارجی تا وقتی تأیید نکنید وارد داده خودرو و یادآوری‌ها نمی‌شود.</p>
+    <div class="foot"><span>به‌روزرسانی: ${fmtStamp(maxUpd(res))}</span></div>
+   </section>
+  </div>`}
+
+function describe(e){
+  switch(e.type){
+    case 'fuel':return [e.liters!=null?fa(e.liters,2)+' لیتر':null,e.station,e.fullTank===true?'باک پر':e.fullTank===false?'باک نیمه':null,e.ppl!=null?fa(e.ppl,2)+' هر لیتر':null].filter(Boolean).join(' · ');
+    case 'service':return [(e.kinds||[]).join('، ')||'سرویس',e.parts,e.shop].filter(Boolean).join(' · ');
+    case 'repair':return [e.title||'تعمیر',e.parts,e.shop].filter(Boolean).join(' · ');
+    case 'accident':return [e.description||'تصادف',e.claim?'پرونده '+e.claim:null].filter(Boolean).join(' · ');
+    case 'expense':return [e.category,e.note].filter(Boolean).join(' · ');
+    case 'document':return `${e.docType||'مدرک'} · انقضا ${fmtDate(e.expiry)}`;
+    case 'odometer':return e.note||'ثبت کیلومتر';default:return ''}}
+
+/* ---- add / edit form ---- */
+const F=[
+  {k:'liters',label:'مقدار سوخت (لیتر)',t:'number',step:'0.01',types:['fuel'],req:['fuel']},
+  {k:'ppl',label:'قیمت هر لیتر',t:'number',step:'0.01',types:['fuel']},
+  {k:'total',label:'مبلغ کل',t:'number',step:'0.01',types:['fuel'],hint:'اگر خالی بماند، از لیتر × قیمت هر لیتر حساب می‌شود.'},
+  {k:'station',label:'جایگاه / شرکت نفتی',t:'text',types:['fuel'],list:'stations'},
+  {k:'fuelType',label:'نوع سوخت',t:'select',opts:()=>['',...FUELS],types:['fuel']},
+  {k:'fullTank',label:'باک پر شد',t:'check',types:['fuel'],hint:'مصرف فقط بین دو سوخت‌گیری باک‌پر محاسبه می‌شود.'},
+  {k:'kinds',label:'نوع سرویس',t:'checks',opts:()=>S.settings&&S.settings.serviceKinds||[],types:['service','repair'],req:['service'],cls:'wide'},
+  {k:'title',label:'شرح تعمیر',t:'text',types:['repair'],req:['repair']},
+  {k:'parts',label:'قطعات تعویض‌شده',t:'text',types:['service','repair'],cls:'wide'},
+  {k:'labor',label:'هزینه اجرت',t:'number',step:'0.01',types:['service','repair']},
+  {k:'partsCost',label:'هزینه قطعه',t:'number',step:'0.01',types:['service','repair']},
+  {k:'shop',label:'تعمیرگاه',t:'text',types:['service','repair','accident']},
+  {k:'description',label:'شرح حادثه',t:'text',types:['accident'],req:['accident'],cls:'wide'},
+  {k:'damage',label:'خسارت',t:'text',types:['accident']},
+  {k:'claim',label:'شماره پرونده بیمه',t:'text',types:['accident']},
+  {k:'cost',label:'هزینه',t:'number',step:'0.01',types:['accident','document']},
+  {k:'category',label:'دسته هزینه',t:'select',opts:()=>S.settings&&S.settings.categories||[],types:['expense'],req:['expense']},
+  {k:'amount',label:'مبلغ',t:'number',step:'0.01',types:['expense'],req:['expense']},
+  {k:'docType',label:'نوع مدرک',t:'select',opts:()=>DOCTYPES,types:['document'],req:['document']},
+  {k:'start',label:'تاریخ شروع اعتبار',t:'date',types:['document']},
+  {k:'expiry',label:'تاریخ انقضا',t:'date',types:['document'],req:['document']},
+];
+function fieldHtml(f,val,type){
+  const id='f-'+f.k,req=(f.req||[]).includes(type)?' <span class="req">*</span>':'';
+  let input;
+  if(f.t==='select'){const opts=f.opts();if(val&&!opts.includes(val))opts.push(val);input=`<select id="${id}">${opts.map(o=>`<option value="${esc(o)}" ${o===(val??'')?'selected':''}>${esc(o||'—')}</option>`).join('')}</select>`}
+  else if(f.t==='check')input=`<label class="checks"><label><input type="checkbox" id="${id}" ${val!==false?'checked':''}> بله</label></label>`;
+  else if(f.t==='checks'){const opts=f.opts();const vals=val||[];input=`<div class="checks" id="${id}">${opts.map(o=>`<label><input type="checkbox" value="${esc(o)}" ${vals.includes(o)?'checked':''}> ${esc(o)}</label>`).join('')}</div>`}
+  else input=`<input id="${id}" type="${f.t}" ${f.step?`step="${f.step}" inputmode="decimal"`:''} ${f.list?`list="${f.list}"`:''} value="${esc(val??'')}">`;
+  return `<div class="field ${f.cls||''}"><label for="${id}">${esc(f.label)}${req}</label>${input}${f.hint?`<span class="hint">${esc(f.hint)}</span>`:''}</div>`}
+function vAdd(){
+  const fm=S.form,ed=fm.editId?S.events[fm.editId]:null,type=ed?ed.type:fm.type,val=ed||fm.draft||{};
+  const vs=activeV();const vid=val.vehicleId||(vs[0]&&vs[0].id);
+  const stations=[...new Set(evs('all').filter(e=>e.station).map(e=>e.station))];
+  const needsKm=type!=='document'&&type!=='expense';
+  return `<div class="view-head"><h2>${ed?'ویرایش رویداد':'ثبت رویداد'}</h2><p>کیلومتر و تاریخ پیش از ذخیره با ثبت‌های قبلی مقایسه می‌شود.</p></div>
+  <section class="panel">
+   ${ed?`<div class="notice">در حال ویرایش «${esc(TYPES[type])}» ${fmtDate(ed.date)} · ${esc(vname(vById(ed.vehicleId)))}</div>`:`<div class="seg" role="group" aria-label="نوع رویداد">${Object.keys(TYPES).map(t=>`<button type="button" data-type="${t}" aria-pressed="${t===type}">${TYPES[t]}</button>`).join('')}</div>`}
+   <form id="evform" class="fgrid" novalidate>
+    <div class="field"><label for="f-vehicleId">خودرو <span class="req">*</span></label><select id="f-vehicleId">${V().map(v=>`<option value="${v.id}" ${v.id===vid?'selected':''} ${v.status==='archived'&&(!ed||ed.vehicleId!==v.id)?'disabled':''}>${esc(vname(v))}${v.status==='archived'?' (بایگانی)':''}</option>`).join('')}</select></div>
+    <div class="field"><label for="f-date">تاریخ <span class="req">*</span></label><input id="f-date" type="date" value="${esc(val.date||todayISO())}"><span class="hint">ورود به میلادی؛ نمایش طبق تنظیمات</span></div>
+    ${needsKm?`<div class="field"><label for="f-km">کیلومتر${type==='odometer'?' <span class="req">*</span>':''}</label><input id="f-km" type="number" inputmode="numeric" step="1" value="${esc(val.km??'')}"><span class="hint" id="km-hint"></span></div>`:''}
+    ${F.filter(f=>f.types.includes(type)).map(f=>fieldHtml(f,val[f.k],type)).join('')}
+    ${['fuel','service','repair','accident','expense','document'].includes(type)?`<div class="field"><label for="f-currency">واحد پول</label><select id="f-currency">${Object.keys(CUR).map(c=>`<option value="${c}" ${(val.currency||curDefault())===c?'selected':''}>${CUR[c]} (${c})</option>`).join('')}</select></div>`:''}
+    <div class="field wide"><label for="f-note">یادداشت</label><textarea id="f-note">${esc(val.note||'')}</textarea></div>
+    ${['service','repair','accident','document','expense'].includes(type)?(S.assets?`<div class="field wide"><label for="f-files">فاکتور یا مدرک (اختیاری)</label><input id="f-files" type="file" multiple accept="image/*,application/pdf">${(val.files||[]).length?`<span class="hint">پیوست‌های فعلی: ${val.files.map(x=>`<a href="/_blob/${esc(x.id)}" target="_blank" rel="noopener">${esc(x.name)}</a>`).join('، ')}</span>`:''}</div>`:'<div class="field wide"><span class="hint">بارگذاری فایل در این نما در دسترس نیست؛ ثبت بدون فایل انجام می‌شود.</span></div>'):''}
+    <datalist id="stations">${stations.map(s=>`<option value="${esc(s)}">`).join('')}</datalist>
+    <div class="wide" id="calc-hint"></div>
+    <div class="wide" id="issues"></div>
+    <div class="wide savebar"><button class="btn primary" type="submit" id="ev-save">${ed?'ذخیره تغییرات':'ثبت '+TYPES[type]}</button>${ed?'<button class="btn" type="button" id="ev-cancel">انصراف</button>':''}</div>
+   </form>
+  </section>`}
+function readForm(){
+  const type=S.form.editId?S.events[S.form.editId].type:S.form.type;
+  const g=id=>{const el=$('#f-'+id);return el?el.value.trim():''};const n=id=>{const s=g(id);return s===''?null:Number(s)};
+  const e={type,vehicleId:g('vehicleId'),date:g('date'),note:g('note')||null};
+  if($('#f-km'))e.km=n('km');
+  if($('#f-currency'))e.currency=g('currency');
+  for(const f of F.filter(f=>f.types.includes(type))){
+    if(f.t==='number')e[f.k]=n(f.k);else if(f.t==='check')e[f.k]=$('#f-'+f.k).checked;
+    else if(f.t==='checks')e[f.k]=$$('#f-'+f.k+' input:checked').map(x=>x.value);else e[f.k]=g(f.k)||null}
+  if(type==='fuel'&&e.total==null&&e.liters!=null&&e.ppl!=null)e.total=Math.round(e.liters*e.ppl*100)/100;
+  return e}
+function validate(e,id){
+  const err=[],con=[],info=[];const t=todayISO();
+  if(!e.vehicleId)err.push('خودرو را انتخاب کنید.');
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(e.date||''))err.push('تاریخ را وارد کنید.');
+  const v=vById(e.vehicleId);if(v&&v.status==='archived'&&!id)err.push('این خودرو بایگانی شده و ثبت جدید ندارد.');
+  for(const f of F.filter(f=>f.types.includes(e.type)&&(f.req||[]).includes(e.type))){const x=e[f.k];if(x==null||x===''||(Array.isArray(x)&&!x.length))err.push(`«${f.label}» لازم است.`)}
+  if(e.type==='odometer'&&e.km==null)err.push('کیلومتر را وارد کنید.');
+  if(e.type==='fuel'){if(e.liters!=null&&e.liters<=0)err.push('مقدار سوخت باید بیشتر از صفر باشد.');if(e.total==null)info.push('مبلغ وارد نشده؛ این سوخت‌گیری در هزینه‌ها حساب نمی‌شود.');if(e.km==null)info.push('کیلومتر وارد نشده؛ مصرف این دوره محاسبه نمی‌شود.')}
+  if(e.km!=null&&e.km<0)err.push('کیلومتر نمی‌تواند منفی باشد.');
+  if(e.date&&e.date>t)con.push(`تاریخ ${fmtDate(e.date)} در آینده است.`);
+  if(e.type==='document'&&e.start&&e.expiry&&e.expiry<e.start)err.push('تاریخ انقضا پیش از تاریخ شروع است.');
+  if(e.km!=null&&e.vehicleId&&e.date){
+    const others=evs(e.vehicleId).filter(x=>x.id!==id&&x.km!=null);
+    const before=others.filter(x=>x.date<=e.date).sort((a,b)=>b.km-a.km)[0];
+    if(before&&e.km<before.km)con.push(`کیلومتر ${fa(e.km)} کمتر از ثبت قبلی است: ${fa(before.km)} در ${fmtDate(before.date)} (${TYPES[before.type]}).`);
+    const after=others.filter(x=>x.date>e.date&&x.km<e.km).sort((a,b)=>a.km-b.km)[0];
+    if(after)con.push(`ثبت بعدی در ${fmtDate(after.date)} کیلومتر ${fa(after.km)} دارد که کمتر از مقدار جدید است.`)}
+  return {err,con,info}}
+function renderIssues(r){
+  const box=$('#issues');if(!box)return;let h='';
+  if(r.err.length)h+=`<div class="issues error"><b>پیش از ثبت اصلاح کنید</b><ul>${r.err.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`;
+  else if(r.con.length)h+=`<div class="issues conflict"><b>تناقض با داده‌های قبلی</b><ul>${r.con.map(x=>`<li>${esc(x)}</li>`).join('')}</ul><div class="bar"><button class="btn" type="button" id="ev-fix">اصلاح می‌کنم</button><button class="btn primary" type="button" id="ev-force">درست است، با همین مقدار ثبت کن</button></div><span class="small muted">اگر تأیید کنید، این هشدار همراه رکورد ذخیره می‌شود.</span></div>`;
+  if(r.info.length)h+=`<div class="issues info"><ul>${r.info.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`;
+  box.innerHTML=h}
+function liveHints(){
+  const h=$('#calc-hint');const kmh=$('#km-hint');
+  if(h&&$('#f-liters')){const l=parseFloat($('#f-liters').value),p=parseFloat($('#f-ppl').value),t=$('#f-total').value;
+    h.innerHTML=(!t&&l>0&&p>0)?`<span class="small muted">مبلغ محاسبه‌شده: ${fa(l*p,2)} (لیتر × قیمت هر لیتر)</span>`:''}
+  if(kmh){const vid=$('#f-vehicleId').value;const o=odo(vid);kmh.textContent=o?`آخرین ثبت: ${fa(o.km)} در ${fmtDate(o.date)}`:''}}
+async function saveEvent(force){
+  const id=S.form.editId;const e=readForm();const r=validate(e,id);
+  if(r.err.length||(r.con.length&&!force)){renderIssues(r);$('#issues').scrollIntoView({block:'nearest'});return}
+  const btn=$('#ev-save');if(btn)btn.disabled=true;
+  const base=id?clone(S.events[id]):{source:'user',createdAt:new Date().toISOString()};
+  Object.assign(base,e);if(r.con.length)base.confirmedWarnings=r.con;else delete base.confirmedWarnings;
+  if(base.approx&&id){const old=S.events[id];base.approx=(old.approx||[]).filter(f=>old[f]===e[f])}
+  const fi=$('#f-files');
+  if(fi&&fi.files.length&&S.assets){base.files=base.files||[];for(const f of fi.files){try{const up=await S.assets.upload(f);base.files.push({id:up.id,name:f.name})}catch(err){toast('بارگذاری «'+f.name+'» انجام نشد.','bad')}}}
+  for(const k of Object.keys(base))if(base[k]===undefined)delete base[k];
+  const ok=await put('events/'+(id||uid('e')),base,id?'تغییرات ذخیره شد':'رویداد ثبت شد');
+  if(btn)btn.disabled=false;
+  if(ok){S.editing=false;S.form.draft=null;if(id){S.form.editId=null;location.hash='#history'}else{const keepV=e.vehicleId;S.form.draft={vehicleId:keepV};render(true)}}}
+
+/* ---- history ---- */
+function histList(){
+  const h=S.hist;const q=h.q.toLowerCase();
+  let l=evs(h.veh).filter(e=>(h.type==='all'||e.type===h.type)&&(!h.from||e.date>=h.from)&&(!h.to||e.date<=h.to));
+  if(q)l=l.filter(e=>[describe(e),e.note,cat(e),vname(vById(e.vehicleId)),TYPES[e.type],e.shop,e.station].join(' ').toLowerCase().includes(q));
+  const k=h.sort,dir=h.dir==='asc'?1:-1;
+  l.sort((a,b)=>{let x,y;if(k==='km'){x=a.km??-1;y=b.km??-1}else if(k==='amount'){x=amt(a)??-1;y=amt(b)??-1}else return sortEv(a,b)*dir;return (x-y)*dir});
+  return l}
+function evRowHtml(e,extra){
+  const v=vById(e.vehicleId);const h=S.hist;const open=h.open===e.id;const a=amt(e);
+  return `<div class="ev${open?' open':''}"><button type="button" class="ev-main" data-open="${e.id}" aria-expanded="${open}">
+    <span class="dot" style="background:${vcol(v)}"></span>
+    <span class="ev-body"><span class="ev-t">${esc(TYPES[e.type])} · ${esc(vname(v))}</span><br><span class="ev-d">${fmtDate(e.date)}${e.km!=null?' · '+fa(e.km,1)+' کیلومتر':''}</span>${approxChip(e,'km')}<br><span class="ev-s">${esc(describe(e))}</span>${extra||''}</span>
+    <span class="ev-amt"><span>${a!=null?money(a,e.currency):''}</span>${srcChip(e)}</span></button>
+    ${open?`<div class="ev-more">${e.note?`<div class="small">${esc(e.note)}</div>`:''}${detailHtml(e)}
+      <div class="bar">${h.delAsk===e.id?`<span class="small">این رویداد حذف شود؟</span><button class="btn sm danger" data-del="${e.id}">حذف قطعی</button><button class="btn sm" data-delno="1">نه</button>`:`<button class="btn sm" data-edit="${e.id}">ویرایش</button><button class="btn sm danger" data-delask="${e.id}">حذف</button>`}</div></div>`:''}</div>`}
+function vHistory(){
+  const h=S.hist;const l=histList();const tot=sumCur(l);
+  const nf=[h.veh!=='all',h.type!=='all',!!h.from,!!h.to].filter(Boolean).length;
+  const sorts=[['date','تاریخ'],['km','کیلومتر'],['amount','مبلغ']];
+  return `<div class="view-head"><h2>تاریخچه</h2><p>${fa(l.length)} رویداد · مجموع مبلغ: ${moneyMulti(tot)}</p></div>
+  <div class="field"><label for="h-q">جست‌وجو</label><input id="h-q" type="search" value="${esc(h.q)}" placeholder="جایگاه، تعمیرگاه، یادداشت…"></div>
+  <div class="bar"><button class="btn sm" type="button" id="h-ftoggle" aria-expanded="${h.showF}">فیلترها${nf?' ('+fa(nf)+')':''}</button>
+   <div class="seg" role="group" aria-label="مرتب‌سازی">${sorts.map(([k,t])=>`<button type="button" data-sort="${k}" aria-pressed="${h.sort===k}">${t}${h.sort===k?(h.dir==='asc'?' ↑':' ↓'):''}</button>`).join('')}</div></div>
+  ${h.showF?`<div class="panel"><div class="fgrid">
+   <div class="field"><label for="h-veh">خودرو</label><select id="h-veh"><option value="all">همه</option>${V().map(v=>`<option value="${v.id}" ${h.veh===v.id?'selected':''}>${esc(vname(v))}</option>`).join('')}</select></div>
+   <div class="field"><label for="h-type">نوع</label><select id="h-type"><option value="all">همه</option>${Object.entries(TYPES).map(([k,t])=>`<option value="${k}" ${h.type===k?'selected':''}>${t}</option>`).join('')}</select></div>
+   <div class="field"><label for="h-from">از تاریخ</label><input id="h-from" type="date" value="${esc(h.from)}"></div>
+   <div class="field"><label for="h-to">تا تاریخ</label><input id="h-to" type="date" value="${esc(h.to)}"></div>
+   ${nf?'<div class="wide"><button class="btn sm" type="button" id="h-clear">پاک کردن فیلترها</button></div>':''}</div></div>`:''}
+  ${l.length?`<div class="evlist">${l.map(e=>evRowHtml(e)).join('')}</div>`:'<div class="empty">با این فیلترها رویدادی پیدا نشد.</div>'}
+  ${S.downloads?'<div class="bar"><button class="btn sm" type="button" id="hist-csv">خروجی CSV همین فهرست</button><button class="btn sm" type="button" id="xlsx">خروجی Excel همه داده‌ها</button></div>':''}
+  <div class="foot"><span>منبع: ثبت‌های شما · برای جزئیات، ویرایش یا حذف روی هر ردیف بزنید.</span><span>به‌روزرسانی: ${fmtStamp(maxUpd(Object.values(S.events)))}</span></div>`}
+function detailHtml(e){
+  const rows=[];
+  if(e.importRef)rows.push('منبع: '+e.importRef);
+  if(e.correction)rows.push('اصلاح: '+e.correction);
+  if((e.approx||[]).length)rows.push('مقادیر تقریبی: '+e.approx.map(f=>f==='km'?'کیلومتر':f).join('، '));
+  if(e.type==='fuel'&&e.km!=null){const s=fuelSeries(e.vehicleId).segs.find(x=>x.id===e.id);rows.push(s?`مصرف این دوره: ${fa(s.cons,2)} لیتر/۱۰۰ کیلومتر (${fa(s.liters,2)} لیتر ÷ ${fa(s.dist)} کیلومتر)`:'مصرف این سوخت‌گیری محاسبه نشده (سوخت‌گیری باک‌پر قبلی با کیلومتر وجود ندارد).')}
+  if(e.type==='service'||e.type==='repair')rows.push(`اجرت: ${money(e.labor,e.currency,2)} · قطعه: ${money(e.partsCost,e.currency,2)}`);
+  if(e.type==='accident')rows.push('خسارت: '+(e.damage||'—'));
+  if(e.type==='document')rows.push(`شروع: ${fmtDate(e.start)} · انقضا: ${fmtDate(e.expiry)}`);
+  if(e.confirmedWarnings)rows.push('ثبت با وجود هشدار: '+e.confirmedWarnings.join(' | '));
+  if((e.files||[]).length)rows.push('پیوست: '+e.files.map(f=>`<a href="/_blob/${esc(f.id)}" target="_blank" rel="noopener">${esc(f.name)}</a>`).join('، '));
+  rows.push('آخرین تغییر: '+fmtStamp(e.updatedAt));
+  return `<div class="detail">${rows.map(r=>`<span>${r.includes('<a ')?r:esc(r)}</span>`).join('')}</div>`}
+
+/* ---- reports ---- */
+function repBounds(){const r=S.rep.range,t=todayISO();if(r==='ytd')return [startOfYear(),t];if(r==='12m'){const d=new Date();d.setFullYear(d.getFullYear()-1);return [iso(d),t]}if(r==='custom')return [S.rep.from||null,S.rep.to||null];return [null,null]}
+const inR=(e,[a,b])=>(!a||e.date>=a)&&(!b||e.date<=b);
+function monthBuckets(a,b){const out=[];const seen={};const d=parseD(a),end=parseD(b);let guard=0;while(d<=end&&guard<4000){const s=iso(d);const p=calParts(s);const k=p.y+'-'+String(p.m).padStart(2,'0');if(!seen[k]){seen[k]={key:k,first:s,label:fmtDate(s,{year:'2-digit',month:'short'})};out.push(seen[k])}d.setDate(d.getDate()+1);guard++}return out}
+function repData(){
+  const vs=V();if(!S.rep.veh||!vById(S.rep.veh))S.rep.veh=(activeV()[0]||vs[0]||{}).id;
+  const vid=S.rep.veh,v=vById(vid),B=repBounds();const all=evs(vid).sort(sortEv);const inr=all.filter(e=>inR(e,B));
+  const readings=all.filter(e=>e.km!=null);const rin=readings.filter(e=>inR(e,B));
+  const prior=B[0]?readings.filter(e=>e.date<B[0]).pop():null;const startR=prior||rin[0],endR=rin[rin.length-1];
+  const driven=(startR&&endR&&endR!==startR)?endR.km-startR.km:null;
+  const {segs}=fuelSeries(vid);const sIn=segs.filter(s=>inR(s,B));const st=consStats(sIn);
+  const fills=inr.filter(e=>e.type==='fuel');const cost=sumCur(inr);const fuelCost=sumCur(fills);
+  return {v,vid,B,all,inr,driven,startR,endR,segs:sIn,st,fills,cost,fuelCost}}
+function vReports(){
+  if(!V().length)return '<div class="empty">برای گزارش، ابتدا خودرو و رویداد ثبت کنید.</div>';
+  const d=repData(),v=d.v,c=mainCur(d.cost);
+  const perKm=(c&&d.driven>0)?d.cost[c]/d.driven:null;
+  const ranges=[['all','همه دوره'],['ytd',cal()==='persian'?'سال جاری شمسی':'سال جاری'],['12m','۱۲ ماه اخیر'],['custom','بازه دلخواه']];
+  const lastDate=d.inr.length?d.inr[d.inr.length-1].date:todayISO();const firstDate=d.B[0]||(d.inr[0]&&d.inr[0].date)||todayISO();
+  const months=d.inr.length?monthBuckets(firstDate,d.B[1]||lastDate):[];
+  const mIdx={};months.forEach((m,i)=>{m.fuel=0;m.other=0;mIdx[m.key]=i});
+  for(const e of d.inr){const a=amt(e);if(a==null)continue;if(c&&(e.currency||curDefault())!==c)continue;const p=calParts(e.date);const k=p.y+'-'+String(p.m).padStart(2,'0');const m=months[mIdx[k]];if(!m)continue;if(e.type==='fuel')m.fuel+=a;else m.other+=a}
+  const cats={};for(const e of d.inr){const a=amt(e);if(a==null)continue;if(c&&(e.currency||curDefault())!==c)continue;cats[cat(e)]=(cats[cat(e)]||0)+a}
+  const catArr=Object.entries(cats).sort((a,b)=>b[1]-a[1]);const catMax=catArr.length?catArr[0][1]:1;
+  // ownership (whole history)
+  const allCost=sumCur(d.all);const oc=mainCur(allCost);const first=d.all.find(e=>e.km!=null),cur=odo(d.vid);
+  const ownKm=(first&&cur)?cur.km-first.km:null;const ownMonths=d.all.length?Math.max(1,daysBetween(d.all[0].date,todayISO())/30.44):null;
+  const priceSeries=d.fills.filter(f=>f.ppl!=null).map(f=>({date:f.date,y:f.ppl,tip:`${fmtDate(f.date)} · ${fa(f.ppl,2)} ${CUR[f.currency]||''} هر لیتر · ${f.station||''}`}));
+  const consSeries=d.segs.map(s=>({date:s.date,y:s.cons,tip:`${fmtDate(s.date)} · ${fa(s.cons,2)} لیتر/۱۰۰ کیلومتر · ${fa(s.dist)} کیلومتر · ${fa(s.liters,2)} لیتر`}));
+  return `<div class="view-head"><h2>گزارش‌ها</h2><p>همه گزارش‌ها از رکوردهای ثبت‌شده ساخته می‌شوند. هرجا داده کافی نیست، عددی نمایش داده نمی‌شود.</p></div>
+  <div class="vswitch" role="group" aria-label="خودرو">${V().map(x=>`<button type="button" data-rv="${x.id}" aria-pressed="${x.id===d.vid}"><span class="dot" style="background:${vcol(x)}"></span>${esc(vname(x))}${x.status==='archived'?' · بایگانی':''}</button>`).join('')}</div>
+  <div class="seg" role="group" aria-label="بازه">${ranges.map(([k,t])=>`<button type="button" data-range="${k}" aria-pressed="${S.rep.range===k}">${t}</button>`).join('')}</div>
+  ${S.rep.range==='custom'?`<div class="fgrid"><div class="field"><label for="r-from">از</label><input id="r-from" type="date" value="${esc(S.rep.from)}"></div><div class="field"><label for="r-to">تا</label><input id="r-to" type="date" value="${esc(S.rep.to)}"></div></div>`:''}
+  ${Object.keys(d.cost).length>1?'<div class="issues conflict">در این بازه چند واحد پول ثبت شده است. جمع‌ها جدا نمایش داده می‌شوند و نمودارها فقط یک واحد را نشان نمی‌دهند؛ تبدیل نرخ انجام نمی‌شود.</div>':''}
+  <div class="kpis">
+   <div class="kpi"><span class="k">کیلومتر طی‌شده</span><span class="v">${d.driven!=null?fa(d.driven):'—'}</span><span class="s">${d.driven!=null?`از ${fa(d.startR.km)} (${fmtDate(d.startR.date)}) تا ${fa(d.endR.km)} (${fmtDate(d.endR.date)})`:'دو ثبت کیلومتر در بازه لازم است'}</span></div>
+   <div class="kpi"><span class="k">هزینه کل ثبت‌شده</span><span class="v">${moneyMulti(d.cost)}</span><span class="s">${fa(d.inr.filter(e=>amt(e)!=null).length)} رویداد با مبلغ</span></div>
+   <div class="kpi"><span class="k">هزینه هر کیلومتر</span><span class="v">${perKm!=null?money(perKm,c,2):'—'}</span><span class="s">${perKm!=null?'هزینه کل ÷ کیلومتر طی‌شده':'کیلومتر یا هزینه کافی نیست'}</span></div>
+   <div class="kpi"><span class="k">میانگین مصرف</span><span class="v">${d.st?fa(d.st.avg,2):'—'}</span><span class="s">${d.st?`لیتر/۱۰۰ کیلومتر · ${fa(d.st.n)} دوره باک‌پر`:'دو سوخت‌گیری باک‌پر لازم است'}</span></div>
+   <div class="kpi"><span class="k">هزینه سوخت</span><span class="v">${moneyMulti(d.fuelCost)}</span><span class="s">${fa(d.fills.length)} سوخت‌گیری · ${fa(d.fills.reduce((s,f)=>s+(f.liters||0),0),1)} لیتر</span></div>
+  </div>
+  <div class="cols">
+   <section class="panel"><h3>روند مصرف سوخت (لیتر در ۱۰۰ کیلومتر)</h3><div class="chart">${lineChart({pts:consSeries,color:vcol(v),avg:d.st?d.st.avg:null,yd:1,label:'روند مصرف',empty:'برای نمودار مصرف دست‌کم سه سوخت‌گیری باک‌پر با کیلومتر لازم است.'})}</div><div class="chart-cap">هر نقطه یک دوره بین دو سوخت‌گیری باک‌پر است؛ خط‌چین میانگین وزنی بازه است. برای دیدن مقدار، روی نقطه بزنید.</div></section>
+   <section class="panel"><h3>قیمت هر لیتر</h3><div class="chart">${lineChart({pts:priceSeries,color:vcol(v),yd:0,label:'قیمت هر لیتر'})}</div><div class="chart-cap">قیمت پرداختی شما در هر سوخت‌گیری، طبق ثبت.</div></section>
+  </div>
+  <div class="cols-2">
+   <section class="panel"><div class="section-h"><h3>هزینه ماهانه${c?' ('+CUR[c]+')':''}</h3><span class="small muted"><span class="dot" style="background:${vcol(v)}"></span> سوخت &nbsp; <span class="dot" style="background:var(--muted)"></span> سایر</span></div>
+    <div class="chart">${c||!Object.keys(d.cost).length?barChart({label:'هزینه ماهانه',bars:months.map(m=>({label:m.label,parts:[{v:m.fuel,color:vcol(v)},{v:m.other,color:'var(--muted)'}],tip:`${fmtDate(m.first,{year:'numeric',month:'long'})} · سوخت ${fa(m.fuel)} · سایر ${fa(m.other)}`}))}):'<div class="empty">چند واحد پول در بازه؛ نمودار رسم نمی‌شود.</div>'}</div></section>
+   <section class="panel"><h3>هزینه بر اساس دسته</h3>${catArr.length?`<div class="hbars">${catArr.map(([k,x])=>`<div class="hbar"><span>${esc(k)}</span><span class="num">${money(x,c)}</span><div class="track"><div class="fill" style="width:${(x/catMax*100).toFixed(1)}%"></div></div></div>`).join('')}</div>`:'<div class="empty">در این بازه هزینه‌ای ثبت نشده است.</div>'}
+    ${d.inr.some(e=>(e.type==='service'||e.type==='repair')&&amt(e)==null)?'<div class="small muted">بعضی سرویس‌ها مبلغ ندارند و در این جمع نیستند.</div>':''}</section>
+  </div>
+  <section class="panel"><h3>مالکیت ${esc(vname(v))} از اولین ثبت</h3>
+   <div class="kpis">
+    <div class="kpi"><span class="k">اولین ثبت</span><span class="v" style="font-size:1rem">${d.all.length?fmtDate(d.all[0].date):'—'}</span><span class="s">${first?fa(first.km,1)+' کیلومتر':''}</span></div>
+    <div class="kpi"><span class="k">کیلومتر طی‌شده از اولین ثبت</span><span class="v">${ownKm!=null?fa(ownKm):'—'}</span><span class="s">${cur?'تا '+fa(cur.km)+' در '+fmtDate(cur.date):''}</span></div>
+    <div class="kpi"><span class="k">هزینه کل ثبت‌شده</span><span class="v">${moneyMulti(allCost)}</span><span class="s">شامل فقط رویدادهای دارای مبلغ</span></div>
+    <div class="kpi"><span class="k">هزینه هر کیلومتر</span><span class="v">${oc&&ownKm>0?money(allCost[oc]/ownKm,oc,2):'—'}</span><span class="s">هزینه کل ÷ کیلومتر از اولین ثبت</span></div>
+    <div class="kpi"><span class="k">میانگین هزینه ماهانه</span><span class="v">${oc&&ownMonths?money(allCost[oc]/ownMonths,oc):'—'}</span><span class="s">${ownMonths?'در '+fa(ownMonths,1)+' ماه':''}</span></div>
+   </div>
+   <div class="small muted">قیمت خرید، استهلاک و بیمه‌هایی که ثبت نکرده‌اید در این جمع نیستند.</div></section>
+  <section class="section"><div class="section-h"><h3>سوخت‌گیری‌های بازه</h3><span class="small muted">${fa(d.fills.length)} مورد</span></div>
+   ${d.fills.length?`<div class="evlist">${d.fills.slice().reverse().slice(0,S.rep.allFills?1e9:10).map(f=>{const sg=fuelSeries(d.vid).segs.find(x=>x.id===f.id);return `<div class="ev"><div class="ev-main" style="cursor:default"><span class="ev-body"><span class="ev-t">${fmtDate(f.date)} · ${fa(f.liters,2)} لیتر</span><br><span class="ev-d">${fa(f.km,1)} کیلومتر · ${esc(f.station||'—')} · ${fa(f.ppl,2)} هر لیتر</span><br><span class="ev-s">${sg?`مصرف دوره ${fa(sg.cons,2)} در ${fa(sg.dist)} کیلومتر`:'مصرف این دوره محاسبه نمی‌شود'}</span></span><span class="ev-amt">${money(amt(f),f.currency)}</span></div></div>`}).join('')}</div>
+   ${d.fills.length>10?`<button class="btn sm" type="button" id="rep-allfills">${S.rep.allFills?'نمایش کمتر':'نمایش همه '+fa(d.fills.length)+' مورد'}</button>`:''}`:'<div class="empty">سوخت‌گیری در این بازه نیست.</div>'}
+  </section>
+  ${S.downloads?'<div class="bar"><button class="btn sm" type="button" id="xlsx">خروجی Excel</button><button class="btn sm" type="button" id="rep-html">گزارش قابل چاپ (HTML برای PDF)</button></div>':''}
+  <div class="foot"><span>منبع: ثبت‌های شما برای ${esc(vname(v))}</span><span>بازه: ${d.B[0]?fmtDate(d.B[0]):'ابتدا'} تا ${d.B[1]?fmtDate(d.B[1]):'آخرین ثبت'}</span><span>به‌روزرسانی: ${fmtStamp(maxUpd(d.all))}</span></div>`}
+
+/* ---- service & reminders ---- */
+function ruleForm(r,prefix){
+  const kinds=S.settings&&S.settings.serviceKinds||[];
+  return `<div class="fgrid" style="margin-top:6px">
+   ${prefix==='new'?`<div class="field"><label for="${prefix}-veh">خودرو</label><select id="${prefix}-veh">${activeV().map(v=>`<option value="${v.id}">${esc(vname(v))}</option>`).join('')}</select></div>
+   <div class="field"><label for="${prefix}-item">نام یادآوری</label><input id="${prefix}-item" type="text" placeholder="مثلاً تعویض لاستیک"></div>`:''}
+   <div class="field"><label for="${prefix}-kind">با ثبت کدام سرویس شروع شود</label><select id="${prefix}-kind">${kinds.map(k=>`<option ${r&&r.matchKind===k?'selected':''}>${esc(k)}</option>`).join('')}</select></div>
+   <div class="field"><label for="${prefix}-m">فاصله (ماه)</label><input id="${prefix}-m" type="number" step="1" value="${esc(r&&r.intervalMonths||'')}"></div>
+   <div class="field"><label for="${prefix}-km">فاصله (کیلومتر)</label><input id="${prefix}-km" type="number" step="100" value="${esc(r&&r.intervalKm||'')}"></div>
+   <div class="field"><label for="${prefix}-wd">هشدار چند روز قبل</label><input id="${prefix}-wd" type="number" step="1" value="${esc(r&&r.warnDays!=null?r.warnDays:'')}"></div>
+   <div class="field"><label for="${prefix}-wk">هشدار چند کیلومتر قبل</label><input id="${prefix}-wk" type="number" step="100" value="${esc(r&&r.warnKm!=null?r.warnKm:'')}"></div>
+   <div class="wide bar"><button class="btn primary" type="button" data-rsave="${prefix}">${r&&r.status==='suggested'?'تأیید و فعال‌سازی':'ذخیره'}</button><button class="btn" type="button" data-rcancel="1">انصراف</button><span class="small muted">دست‌کم یکی از فاصله ماه یا کیلومتر لازم است.</span></div></div>`}
+function vService(){
+  const rules=Object.values(S.rules).filter(r=>{const v=vById(r.vehicleId);return v&&v.status!=='archived'&&r.status!=='dismissed'});
+  const sv=evs('all').filter(e=>(e.type==='service'||e.type==='repair'||e.type==='accident')&&vById(e.vehicleId)&&vById(e.vehicleId).status!=='archived').sort(sortEv).reverse();
+  const dw=S.settings?S.settings.docWarnDays:null;
+  return `<div class="view-head"><div><h2>سرویس و یادآوری</h2><p>برنامه رسمی سازنده به‌صورت پیشنهاد و با منبع نمایش داده می‌شود. یادآوری فقط بعد از تأیید شما فعال می‌شود و هر فاصله‌ای را می‌توانید تغییر دهید.</p></div><button class="btn primary" type="button" id="rule-add">افزودن یادآوری</button></div>
+  ${S.addRule?`<section class="panel"><h3>یادآوری جدید</h3>${ruleForm(null,'new')}</section>`:''}
+  <div class="vgrid">${activeV().map(v=>{const rs=rules.filter(r=>r.vehicleId===v.id);return `<section class="panel"><div class="vname"><span class="dot" style="background:${vcol(v)}"></span><h3>${esc(vname(v))}</h3></div>
+   ${rs.length?`<div class="list">${rs.map(r=>{const st=r.status==='active'?ruleStatus(r):null;const ed=S.ruleEdit===r.id;
+     const srcs=(r.researchIds||[]).map(id=>S.research[id]).filter(Boolean);
+     return `<div class="li"><div class="body"><div class="li-top"><span class="t">${esc(r.item)} ${r.status==='suggested'?'<span class="chip unconf">پیشنهاد · تأییدنشده</span>':'<span class="chip user">تأیید شما</span>'}</span>${st?pill(st.state):'<span class="pill neutral">غیرفعال</span>'}</div>
+      <div class="d">فاصله: ${r.intervalMonths?fa(r.intervalMonths)+' ماه':'ماه تعیین نشده'} · ${r.intervalKm?fa(r.intervalKm)+' کیلومتر':'کیلومتر تعیین نشده'} · شروع با «${esc(r.matchKind)}»</div>
+      ${r.status==='suggested'&&r.suggestNote?`<div class="why">${esc(r.suggestNote)}</div>`:''}
+      ${srcs.length?`<div class="why">منابع: ${srcs.map(s=>`<a href="#research">${esc(s.sourceName)}</a> (${esc(s.status==='confirmed'?'تأییدشده':s.status==='rejected'?'ردشده':'تأییدنشده')})`).join('، ')}</div>`:''}
+      ${st?`${st.parts?`<div class="d">${st.parts.map(esc).join(' · ')}</div>`:''}<div class="why">${esc(st.reason)}</div>${st.noWarn?'<div class="why">آستانه هشدار تعیین نشده؛ فقط وضعیت «سررسید گذشته» نمایش داده می‌شود.</div>':''}`:''}
+      ${ed?ruleForm(r,'r-'+r.id):`<div class="bar" style="margin-top:6px"><button class="btn sm" data-redit="${r.id}">${r.status==='suggested'?'بررسی و تأیید':'ویرایش'}</button>${r.status==='suggested'?`<button class="btn sm" data-rdismiss="${r.id}">رد پیشنهاد</button>`:''}</div>`}</div>
+      </div>`}).join('')}</div>`:'<div class="empty">یادآوری‌ای برای این خودرو تعریف نشده است.</div>'}
+   </section>`}).join('')}</div>
+  <section class="panel"><div class="section-h"><h3>مدارک و تاریخ انقضا</h3><a class="btn sm" href="#add" data-preset="document">ثبت مدرک</a></div>
+   <div class="bar"><div class="field" style="max-width:240px"><label for="doc-warn">هشدار چند روز پیش از انقضا</label><input id="doc-warn" type="number" step="1" value="${dw!=null?dw:''}" placeholder="تعیین نشده"></div><button class="btn" type="button" id="doc-warn-save">ذخیره</button></div>
+   ${(()=>{const docs=activeV().flatMap(v=>latestDocs(v.id));return docs.length?`<div class="list">${docs.map(e=>{const st=docStatus(e);return `<div class="li"><span class="dot" style="background:${vcol(vById(e.vehicleId))};margin-top:9px"></span><div class="body"><div class="li-top"><span class="t">${esc(e.docType)} · ${esc(vname(vById(e.vehicleId)))}</span>${pill(st.state)}</div><div class="why">${esc(st.reason)}</div></div></div>`}).join('')}</div>`:'<div class="empty">هنوز مدرکی ثبت نشده است. تاریخ انقضای بیمه ترافیک، کاسکو و معاینه فنی را از «ثبت رویداد ← مدرک» وارد کنید.</div>'})()}
+  </section>
+  <section class="section"><div class="section-h"><h3>تایم‌لاین سرویس، تعمیر و تصادف</h3><span class="small muted">مجموع ثبت‌شده: ${moneyMulti(sumCur(sv))}</span></div>
+   ${sv.length?`<div class="panel"><div class="list timeline">${sv.map(e=>{const v=vById(e.vehicleId);return `<div class="li" style="--vc:${vcol(v)}"><div class="body"><div class="t">${esc(TYPES[e.type])} · ${esc(vname(v))} ${srcChip(e)}</div><div class="d">${fmtDate(e.date)}${e.km!=null?' · '+fa(e.km)+' کیلومتر':''}${approxChip(e,'km')} · ${esc(describe(e))}</div>${e.parts?`<div class="why">قطعات: ${esc(e.parts)}</div>`:''}</div><div class="num small" style="white-space:nowrap">${amt(e)!=null?money(amt(e),e.currency):'<span class="muted">مبلغ ثبت نشده</span>'}</div></div>`}).join('')}</div></div>`:'<div class="empty">سرویس یا تعمیری ثبت نشده است.</div>'}
+  </section>
+  <div class="foot"><span>منبع یادآوری‌ها: قوانین تأییدشده شما + رکوردهای سرویس</span><span>به‌روزرسانی: ${fmtStamp(maxUpd(Object.values(S.rules)))}</span></div>`}
+
+/* ---- research ---- */
+function vResearch(){
+  const res=Object.values(S.research).sort((a,b)=>(a.order||0)-(b.order||0));
+  const conf={high:['good','اطمینان بالا'],medium:['warn','اطمینان متوسط'],low:['bad','اطمینان پایین']};
+  return `<div class="view-head"><div><h2>تحقیقات و منابع</h2><p>نتایج جست‌وجو در منابع خارجی. تا وقتی تأیید نکنید، هیچ‌کدام به‌عنوان اطلاعات قطعی خودرو ثبت نمی‌شود. برای تحقیق تازه از Claude بخواهید؛ نتیجه را با فایل پشتیبان به این نسخه منتقل کنید.</p></div></div>
+  <div class="cols">${res.length?res.map(r=>`<article class="rcard">
+   <div class="section-h"><h3>${esc(r.title)}</h3>${r.status==='confirmed'?'<span class="chip user">تأییدشده توسط شما</span>':r.status==='rejected'?'<span class="chip">ردشده</span>':'<span class="chip unconf">تأییدنشده</span>'}</div>
+   <div class="bar">${(r.vehicleIds||[]).map(id=>vById(id)?`<span class="small"><span class="dot" style="background:${vcol(vById(id))}"></span> ${esc(vname(vById(id)))}</span>`:'').join('')}<span class="pill ${conf[r.confidence]?conf[r.confidence][0]:'neutral'}">${conf[r.confidence]?conf[r.confidence][1]:'نامشخص'}</span><span class="chip ext">منبع خارجی</span></div>
+   <p style="margin:0">${esc(r.summary)}</p>
+   ${(r.figures||[]).length?`<ul class="figs">${r.figures.map(f=>`<li>${esc(f)}</li>`).join('')}</ul>`:''}
+   ${r.caveat?`<div class="issues conflict small">${esc(r.caveat)}</div>`:''}
+   <dl><dt>منبع</dt><dd>${esc(r.sourceName)} · ${esc(r.sourceType||'')}</dd><dt>لینک</dt><dd><a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.url)}</a></dd><dt>تاریخ دسترسی</dt><dd>${fmtDate(r.accessed)}</dd></dl>
+   <div class="bar">${r.status!=='confirmed'?`<button class="btn sm" data-rs="${r.id}" data-st="confirmed">تأیید می‌کنم</button>`:''}${r.status!=='rejected'?`<button class="btn sm" data-rs="${r.id}" data-st="rejected">رد</button>`:''}${r.status!=='unconfirmed'?`<button class="btn sm" data-rs="${r.id}" data-st="unconfirmed">بازگشت به تأییدنشده</button>`:''}</div>
+   <div class="foot"><span>به‌روزرسانی: ${fmtStamp(r.updatedAt)}</span></div></article>`).join(''):'<div class="empty">هنوز منبعی ثبت نشده است.</div>'}</div>`}
+
+/* ---- prefs ---- */
+const VF=[['brand','برند'],['model','مدل'],['short','نام کوتاه'],['chassis','کد شاسی/نسل'],['year','سال ساخت','number'],['fuel','نوع سوخت','fuel'],['gearbox','گیربکس'],['market','بازار'],['plate','پلاک'],['vin','VIN'],['purchaseDate','تاریخ خرید','date'],['purchaseKm','کیلومتر هنگام خرید','number']];
+function vehForm(v,p){return `<div class="fgrid">${VF.map(([k,l,t])=>`<div class="field"><label for="${p}-${k}">${l}</label>${t==='fuel'?`<select id="${p}-${k}">${['',...FUELS].map(o=>`<option ${v[k]===o?'selected':''} value="${o}">${o||'—'}</option>`).join('')}</select>`:`<input id="${p}-${k}" type="${t||'text'}" value="${esc(v[k]??'')}">`}</div>`).join('')}
+  <div class="field wide"><label for="${p}-notes">یادداشت</label><textarea id="${p}-notes">${esc(v.notes||'')}</textarea></div>
+  <div class="wide bar"><button class="btn primary" type="button" data-vsave="${p}">ذخیره</button><button class="btn" type="button" data-vcancel="1">انصراف</button></div></div>`}
+function vPrefs(){
+  const s=S.settings||{};
+  const listEditor=(key,title,items)=>`<section class="panel"><h3>${title}</h3><div class="checks">${items.map((x,i)=>`<label>${esc(x)} <button class="btn link" style="min-height:28px;font-size:1rem" data-ldel="${key}|${i}" aria-label="حذف ${esc(x)}">×</button></label>`).join('')}</div><div class="bar"><div class="field" style="flex:1"><label for="add-${key}">مورد جدید</label><input id="add-${key}" type="text"></div><button class="btn" type="button" data-ladd="${key}">افزودن</button></div></section>`;
+  return `<div class="view-head"><h2>تنظیمات</h2><p>تغییر واحد پول فقط برای ثبت‌های بعدی است و مبلغ‌های قبلی را تبدیل نمی‌کند.</p></div>
+  <section class="panel"><h3>نمایش</h3><div class="fgrid">
+   <div class="field"><label for="p-cal">تقویم</label><select id="p-cal"><option value="gregorian" ${s.calendar!=='persian'?'selected':''}>میلادی</option><option value="persian" ${s.calendar==='persian'?'selected':''}>شمسی</option></select></div>
+   <div class="field"><label for="p-cur">واحد پول پیش‌فرض</label><select id="p-cur">${Object.keys(CUR).map(c=>`<option value="${c}" ${curDefault()===c?'selected':''}>${CUR[c]} (${c})</option>`).join('')}</select></div>
+   <div class="wide bar"><button class="btn primary" type="button" id="p-save">ذخیره</button></div></div></section>
+  <section class="section"><div class="section-h"><h3>خودروها</h3><button class="btn" type="button" id="veh-add">افزودن خودرو</button></div>
+   ${S.vehEdit==='new'?`<section class="panel"><h3>خودروی جدید</h3>${vehForm({},'vnew')}</section>`:''}
+   <div class="vgrid">${V().map(v=>`<article class="vcard${v.status==='archived'?' arch':''}">
+    <div class="vhead"><div><div class="vname"><span class="dot" style="background:${vcol(v)}"></span><h3>${esc(vname(v))}</h3></div><div class="vmeta">${esc((v.brand||'')+' '+(v.model||''))}</div></div>${v.status==='archived'?'<span class="pill neutral">بایگانی</span>':'<span class="pill good">فعال</span>'}</div>
+    <dl class="small" style="margin:0;display:grid;grid-template-columns:auto 1fr;gap:4px 12px"><dt class="muted">مشخصات</dt><dd style="margin:0">${esc([v.year,v.chassis,v.fuel,v.gearbox,v.market].filter(Boolean).join(' · ')||'ثبت نشده')}</dd><dt class="muted">پلاک</dt><dd style="margin:0">${esc(v.plate||'ثبت نشده')}</dd><dt class="muted">VIN</dt><dd style="margin:0;overflow-wrap:anywhere">${esc(v.vin||'ثبت نشده')}</dd><dt class="muted">خرید</dt><dd style="margin:0">${v.purchaseDate?fmtDate(v.purchaseDate):'تاریخ ثبت نشده'}${v.purchaseKm!=null?' · '+fa(v.purchaseKm,1)+' کیلومتر':''}</dd>${v.notes?`<dt class="muted">یادداشت</dt><dd style="margin:0">${esc(v.notes)}</dd>`:''}</dl>
+    ${S.vehEdit===v.id?vehForm(v,'v-'+v.id):`<div class="bar"><button class="btn sm" data-vedit="${v.id}">ویرایش</button><button class="btn sm" data-varch="${v.id}">${v.status==='archived'?'فعال‌سازی':'بایگانی'}</button></div>`}
+   </article>`).join('')}</div>
+  </section>
+  <div class="cols">${listEditor('categories','دسته‌های هزینه',s.categories||[])}${listEditor('serviceKinds','انواع سرویس',s.serviceKinds||[])}</div>
+  ${backupPanel()}
+  <section class="panel"><h3>سطح دسترسی</h3><p style="margin:0">این نسخه مستقل گوشی است؛ داده‌ها فقط روی همین گوشی ذخیره می‌شوند و به هیچ سروری فرستاده نمی‌شوند. با نسخه داخل Claude همگام نیست. ورود چندکاربره و اشتراک خودرو با راننده یا خانواده برای نسخه فروشگاهی (App Store و Google Play) برنامه‌ریزی شده است.</p></section>
+  <div class="foot"><span>به‌روزرسانی تنظیمات: ${fmtStamp(s.updatedAt)}</span></div>`}
+
+
+/* ---------- standalone: backup & restore ---------- */
+function welcomePanel(){return `<section class="panel"><h3>به پایش خودرو خوش آمدید</h3><p style="margin:0" class="small">اگر فایل پشتیبان دارید (مثلاً فایلی که Claude برایتان فرستاده)، آن را بارگذاری کنید تا خودروها و همه رویدادها برگردند. وگرنه از «تنظیمات» اولین خودرو را اضافه کنید.</p>
+  ${restoreControls()}<a class="btn" href="#prefs">افزودن خودرو در تنظیمات</a></section>`}
+function restoreControls(){const r=S.restore;
+  if(r)return `<div class="issues conflict"><b>بازیابی از «${esc(r.name)}»</b><span>${fa(r.counts.vehicles)} خودرو، ${fa(r.counts.events)} رویداد، ${fa(r.counts.rules)} یادآوری، ${fa(r.counts.research)} منبع${r.exportedAt?' · تهیه‌شده '+fmtStamp(r.exportedAt):''}</span><span>${window.__localStore&&!window.__localStore.isEmpty()?'همه داده‌های فعلی این گوشی با محتوای این فایل جایگزین می‌شود.':''}</span><div class="bar"><button class="btn primary" type="button" id="bk-apply">بازیابی کن</button><button class="btn" type="button" id="bk-cancel">انصراف</button></div></div>`;
+  return `<label class="btn primary block" for="bk-file">انتخاب فایل پشتیبان</label><input id="bk-file" type="file" accept=".json,application/json" hidden>`}
+function backupPanel(){return `<section class="panel"><h3>پشتیبان‌گیری و بازیابی</h3>
+  <p style="margin:0" class="small">داده‌ها فقط روی همین گوشی است. اگر اپ را از صفحه اصلی حذف کنید یا داده‌های Safari را پاک کنید، از بین می‌رود. هر چند وقت یک بار پشتیبان بگیرید و در Files یا iCloud Drive ذخیره کنید.</p>
+  <button class="btn block" type="button" id="bk-export">گرفتن فایل پشتیبان</button>
+  ${restoreControls()}
+  ${S.lastBackup?`<span class="small muted">آخرین پشتیبان در این نشست: ${fmtStamp(S.lastBackup)}</span>`:''}</section>`}
+function countsOf(d){const n=k=>Object.keys(d[k]||{}).length;return {vehicles:n('vehicles'),events:n('events'),rules:n('rules'),research:n('research')}}
+async function onBackupFile(input){const f=input.files&&input.files[0];if(!f)return;
+  let j;try{j=JSON.parse(await f.text())}catch(e){toast('این فایل قابل خواندن نیست.','bad');return}
+  const data=j&&j.app==='car-monitoring'&&j.data?j.data:null;
+  if(!data||typeof data!=='object'||!data.vehicles){toast('این فایل، پشتیبان پایش خودرو نیست.','bad');return}
+  S.restore={name:f.name,data,exportedAt:j.exportedAt||null,counts:countsOf(data)};render(true)}
+async function exportBackup(){
+  const data=window.__localStore?window.__localStore.snapshot():{};
+  const body=JSON.stringify({app:'car-monitoring',version:1,exportedAt:new Date().toISOString(),data},null,1);
+  await saveFile('car-monitoring-backup-'+todayISO()+'.json',body);S.lastBackup=new Date().toISOString();render(true)}
+
+/* ---------- exports ---------- */
+function loadXLSX(){return new Promise((res,rej)=>{if(window.XLSX)return res(window.XLSX);const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';s.onload=()=>res(window.XLSX);s.onerror=rej;document.head.appendChild(s)})}
+async function saveFile(name,data){if(!S.downloads){toast('ذخیره فایل در این نما در دسترس نیست.','bad');return}try{await S.downloads.save({filename:name,data});toast('فایل آماده شد')}catch(e){if(e&&e.code==='declined')return;if(e&&e.code==='rate_limited'){toast('فایل آماده است؛ یک بار دیگر دکمه را بزنید.');return}toast('فایل ذخیره نشد.','bad')}}
+function evRow(e){const v=vById(e.vehicleId);const s=e.type==='fuel'?fuelSeries(e.vehicleId).segs.find(x=>x.id===e.id):null;
+  return {'تاریخ':e.date,'خودرو':vname(v),'نوع':TYPES[e.type],'کیلومتر':e.km??'','شرح':describe(e),'مبلغ':amt(e)??'','واحد پول':e.currency||'','لیتر':e.liters??'','قیمت هر لیتر':e.ppl??'','باک پر':e.type==='fuel'?(e.fullTank?'بله':'خیر'):'','مصرف دوره (L/100km)':s?Math.round(s.cons*100)/100:'','یادداشت':e.note||'','منبع':e.source==='import'?(e.importRef||'فایل'):e.source==='chat'?'گفتگو':'ثبت در اپ','تقریبی':(e.approx||[]).join(','),'آخرین تغییر':e.updatedAt||''}}
+async function exportXlsx(){
+  let X;try{X=await loadXLSX()}catch(e){toast('کتابخانه Excel بارگذاری نشد.','bad');return}
+  const wb=X.utils.book_new();wb.Workbook={Views:[{RTL:true}]};
+  X.utils.book_append_sheet(wb,X.utils.json_to_sheet(evs('all').sort(sortEv).map(evRow)),'همه رویدادها');
+  for(const v of V()){const rows=evs(v.id).filter(e=>e.type==='fuel').sort(sortEv).map(evRow);if(rows.length)X.utils.book_append_sheet(wb,X.utils.json_to_sheet(rows),('سوخت '+vname(v)).slice(0,31))}
+  X.utils.book_append_sheet(wb,X.utils.json_to_sheet(Object.values(S.rules).map(r=>({'خودرو':vname(vById(r.vehicleId)),'یادآوری':r.item,'وضعیت':r.status,'ماه':r.intervalMonths??'','کیلومتر':r.intervalKm??'','هشدار روز':r.warnDays??'','هشدار کیلومتر':r.warnKm??''}))),'یادآوری‌ها');
+  X.utils.book_append_sheet(wb,X.utils.json_to_sheet(Object.values(S.research).map(r=>({'عنوان':r.title,'خلاصه':r.summary,'منبع':r.sourceName,'لینک':r.url,'تاریخ دسترسی':r.accessed,'اطمینان':r.confidence,'وضعیت تأیید':r.status}))),'منابع');
+  const buf=X.write(wb,{bookType:'xlsx',type:'array'});await saveFile('car-monitoring-'+todayISO()+'.xlsx',new Uint8Array(buf))}
+async function exportCsv(){const rows=histList().map(evRow);if(!rows.length){toast('فهرستی برای خروجی نیست.');return}const keys=Object.keys(rows[0]);const q=x=>'"'+String(x).replace(/"/g,'""')+'"';
+  const csv='﻿'+[keys.map(q).join(','),...rows.map(r=>keys.map(k=>q(r[k])).join(','))].join('\r\n');await saveFile('car-history-'+todayISO()+'.csv',csv)}
+async function exportReport(){
+  const d=repData();const v=d.v;const st=d.st;
+  const rows=d.inr.slice().reverse().map(e=>`<tr><td>${fmtDate(e.date)}</td><td>${esc(TYPES[e.type])}</td><td>${e.km!=null?fa(e.km):'—'}</td><td>${esc(describe(e))}</td><td>${amt(e)!=null?money(amt(e),e.currency,2):'—'}</td></tr>`).join('');
+  const html=`<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><title>گزارش ${esc(vname(v))}</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap"><style>body{font-family:Vazirmatn,Tahoma,sans-serif;margin:32px;color:#18201c}h1{font-size:20px}table{border-collapse:collapse;width:100%;font-size:12px}td,th{border-bottom:1px solid #ccc;padding:5px;text-align:right}th{background:#eee}.k{display:flex;flex-wrap:wrap;gap:24px;margin:16px 0}.k div{min-width:150px}.k b{display:block;font-size:16px}small{color:#555}</style></head><body>
+  <h1>گزارش ${esc((v.brand||'')+' '+(v.model||''))}</h1><small>بازه: ${d.B[0]?fmtDate(d.B[0]):'ابتدا'} تا ${d.B[1]?fmtDate(d.B[1]):'آخرین ثبت'} · تهیه‌شده ${fmtStamp(new Date().toISOString())} · منبع: ثبت‌های کاربر در پایش خودرو</small>
+  <div class="k"><div>کیلومتر طی‌شده<b>${d.driven!=null?fa(d.driven):'—'}</b></div><div>هزینه کل<b>${moneyMulti(d.cost)}</b></div><div>هزینه سوخت<b>${moneyMulti(d.fuelCost)}</b></div><div>میانگین مصرف<b>${st?fa(st.avg,2)+' لیتر/۱۰۰ کیلومتر':'داده کافی نیست'}</b></div></div>
+  <table><thead><tr><th>تاریخ</th><th>نوع</th><th>کیلومتر</th><th>شرح</th><th>مبلغ</th></tr></thead><tbody>${rows}</tbody></table>
+  <p><small>برای PDF: این فایل را در مرورگر باز کنید و از منوی چاپ، «ذخیره به‌صورت PDF» را انتخاب کنید.</small></p></body></html>`;
+  await saveFile('car-report-'+todayISO()+'.html',html)}
+
+/* ---------- render & routing ---------- */
+const VIEWS={dashboard:vDashboard,add:vAdd,history:vHistory,reports:vReports,service:vService,research:vResearch,prefs:vPrefs};
+function allLoaded(){return Object.values(S.loaded).every(Boolean)}
+function render(force){
+  if(!force&&S.editing){S.pending=true;return}
+  S.pending=false;
+  $$('a[data-nav]').forEach(a=>a.setAttribute('aria-current',a.getAttribute('href')==='#'+S.route?'page':'false'));
+  if(!S.db){return}
+  if(!allLoaded()){$('#main').innerHTML='<div class="empty">در حال دریافت داده‌ها…</div>';return}
+  const sy=window.scrollY;
+  try{$('#main').innerHTML=VIEWS[S.route]()}catch(err){console.error(err);$('#main').innerHTML='<div class="issues error">نمایش این بخش با خطا روبه‌رو شد. صفحه را دوباره باز کنید.</div>'}
+  if(S.route==='add')liveHints();
+  window.scrollTo(0,sy)}
+let rq=0;function schedule(){if(rq)return;rq=requestAnimationFrame(()=>{rq=0;render()})}
+function route(){const h=location.hash.replace('#','');const r=ROUTES.includes(h)?h:'dashboard';if(r!==S.route){S.route=r;S.editing=false;window.scrollTo(0,0)}if(r!=='add')S.form.editId=null;render(true)}
+window.addEventListener('hashchange',route);
+
+/* ---------- events ---------- */
+const main=$('#main');
+main.addEventListener('input',e=>{
+  const t=e.target;
+  if(t.id==='h-q'){S.hist.q=t.value;clearTimeout(main._q);main._q=setTimeout(()=>{render(true);const el=$('#h-q');if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length)}},250);return}
+  if(S.route==='add'){S.editing=true;liveHints();const box=$('#issues');if(box&&box.innerHTML)box.innerHTML='';return}
+  if(t.closest('.fgrid')||t.id==='doc-warn'||t.id&&t.id.startsWith('add-'))S.editing=true});
+main.addEventListener('change',e=>{
+  const t=e.target,id=t.id;
+  if(id==='bk-file'){onBackupFile(t);return}
+  if(id==='dash-arch'){S.dashArch=t.checked;render(true)}
+  else if(['h-veh','h-type','h-from','h-to'].includes(id)){S.hist[id.slice(2)]=t.value;render(true)}
+  else if(id==='r-veh'){S.rep.veh=t.value;render(true)}
+  else if(id==='r-from'||id==='r-to'){S.rep[id.slice(2)]=t.value;render(true)}
+  else if(id==='f-vehicleId')liveHints()});
+main.addEventListener('submit',e=>{if(e.target.id==='evform'){e.preventDefault();saveEvent(false)}});
+main.addEventListener('click',async e=>{
+  const b=e.target.closest('button,a[data-preset]');if(!b)return;const d=b.dataset;
+  if(d.dv){S.dashVeh=d.dv;render(true);return}
+  if(b.id==='bk-export'){exportBackup();return}
+  if(b.id==='bk-cancel'){S.restore=null;render(true);return}
+  if(b.id==='bk-apply'){const r=S.restore;S.restore=null;if(window.__localStore&&window.__localStore.replace(r.data)){toast('داده‌ها بازیابی شد');location.hash='#dashboard'}else toast('بازیابی انجام نشد؛ فضای ذخیره‌سازی گوشی پر است.','bad');render(true);return}
+  if(d.type){S.form.type=d.type;S.form.draft={vehicleId:($('#f-vehicleId')||{}).value};S.editing=false;render(true);return}
+  if(b.id==='ev-force'){saveEvent(true);return}
+  if(b.id==='ev-fix'){$('#issues').innerHTML='';const k=$('#f-km')||$('#f-date');if(k)k.focus();return}
+  if(b.id==='ev-cancel'){S.form.editId=null;S.editing=false;location.hash='#history';return}
+  if(d.preset){S.form.type=d.preset;S.form.editId=null;return}
+  if(d.sort){S.hist.dir=S.hist.sort===d.sort&&S.hist.dir==='desc'?'asc':'desc';S.hist.sort=d.sort;render(true);return}
+  if(b.id==='h-ftoggle'){S.hist.showF=!S.hist.showF;render(true);return}
+  if(b.id==='h-clear'){Object.assign(S.hist,{veh:'all',type:'all',from:'',to:''});render(true);return}
+  if(d.open){S.hist.open=S.hist.open===d.open?null:d.open;S.hist.delAsk=null;render(true);return}
+  if(d.edit){S.form.editId=d.edit;S.editing=false;location.hash='#add';return}
+  if(d.delask){S.hist.delAsk=d.delask;render(true);return}
+  if(d.delno){S.hist.delAsk=null;render(true);return}
+  if(d.del){S.hist.delAsk=null;await remove('events/'+d.del);return}
+  if(b.id==='hist-csv'){exportCsv();return}
+  if(b.id==='xlsx'){exportXlsx();return}
+  if(b.id==='rep-html'){exportReport();return}
+  if(d.range){S.rep.range=d.range;render(true);return}
+  if(d.rv){S.rep.veh=d.rv;render(true);return}
+  if(b.id==='rep-allfills'){S.rep.allFills=!S.rep.allFills;render(true);return}
+  if(b.id==='rule-add'){S.addRule=!S.addRule;S.ruleEdit=null;S.editing=false;render(true);return}
+  if(d.redit){S.ruleEdit=d.redit;S.addRule=false;S.editing=false;render(true);return}
+  if(d.rcancel){S.ruleEdit=null;S.addRule=false;S.editing=false;render(true);return}
+  if(d.rdismiss){await patch('rules/'+d.rdismiss,{status:'dismissed'},'پیشنهاد رد شد');return}
+  if(d.rsave){const p=d.rsave;const n=k=>{const x=$('#'+p+'-'+k);return x&&x.value!==''?Number(x.value):null};
+    const data={matchKind:$('#'+p+'-kind').value,intervalMonths:n('m'),intervalKm:n('km'),warnDays:n('wd'),warnKm:n('wk')};
+    if(data.intervalMonths==null&&data.intervalKm==null){toast('فاصله ماه یا کیلومتر را وارد کنید.','bad');return}
+    if([data.intervalMonths,data.intervalKm,data.warnDays,data.warnKm].some(x=>x!=null&&x<0)){toast('عدد منفی مجاز نیست.','bad');return}
+    S.editing=false;
+    if(p==='new'){const item=$('#new-item').value.trim();if(!item){toast('نام یادآوری را وارد کنید.','bad');return}
+      if(await put('rules/'+uid('r'),Object.assign(data,{vehicleId:$('#new-veh').value,item,status:'active',source:'user',confirmedAt:new Date().toISOString()}),'یادآوری فعال شد'))S.addRule=false}
+    else{const id=p.slice(2);if(await patch('rules/'+id,Object.assign(data,{status:'active',confirmedAt:new Date().toISOString()}),'یادآوری فعال شد'))S.ruleEdit=null}
+    render(true);return}
+  if(b.id==='doc-warn-save'){const x=$('#doc-warn').value;const s=clone(S.settings);s.docWarnDays=x===''?null:Number(x);S.editing=false;await put('meta/settings',s);return}
+  if(d.rs){await patch('research/'+d.rs,{status:d.st},d.st==='confirmed'?'منبع تأیید شد':d.st==='rejected'?'منبع رد شد':'وضعیت بازگشت');return}
+  if(b.id==='p-save'){const s=clone(S.settings);s.calendar=$('#p-cal').value;s.currency=$('#p-cur').value;S.editing=false;await put('meta/settings',s);return}
+  if(d.ldel){const [k,i]=d.ldel.split('|');const s=clone(S.settings);s[k].splice(+i,1);await put('meta/settings',s,'حذف شد');return}
+  if(d.ladd){const k=d.ladd;const x=$('#add-'+k).value.trim();if(!x)return;const s=clone(S.settings);s[k]=s[k]||[];if(s[k].includes(x)){toast('این مورد وجود دارد.');return}s[k].push(x);S.editing=false;await put('meta/settings',s,'اضافه شد');return}
+  if(b.id==='veh-add'){S.vehEdit=S.vehEdit==='new'?null:'new';S.editing=false;render(true);return}
+  if(d.vedit){S.vehEdit=S.vehEdit===d.vedit?null:d.vedit;S.editing=false;render(true);return}
+  if(d.vcancel){S.vehEdit=null;S.editing=false;render(true);return}
+  if(d.varch){const v=clone(S.vehicles[d.varch]);v.status=v.status==='archived'?'active':'archived';delete v.id;await put('vehicles/'+d.varch,v);return}
+  if(d.vsave){const p=d.vsave;const isNew=p==='vnew';const id=isNew?uid('v'):p.slice(2);const v=isNew?{status:'active',slot:Math.min(8,V().length+1)}:clone(S.vehicles[id]);delete v.id;
+    for(const [k,,t] of VF){const x=$('#'+p+'-'+k).value.trim();v[k]=x===''?null:(t==='number'?Number(x):x)}v.notes=$('#'+p+'-notes').value.trim()||null;
+    if(!v.brand&&!v.model){toast('برند یا مدل را وارد کنید.','bad');return}
+    S.editing=false;if(await put('vehicles/'+id,v))S.vehEdit=null;render(true);return}
+});
+document.addEventListener('pointermove',e=>{if(e.pointerType!=='mouse')return;const t=e.target.closest&&e.target.closest('[data-tip]');const tip=$('#tip');if(!t){tip.hidden=true;return}tip.textContent=t.getAttribute('data-tip');tip.hidden=false;const w=tip.offsetWidth,h=tip.offsetHeight;let x=e.clientX+12,y=e.clientY-h-10;if(x+w>innerWidth-8)x=e.clientX-w-12;if(y<8)y=e.clientY+14;tip.style.left=x+'px';tip.style.top=y+'px'});
+document.addEventListener('pointerleave',()=>$('#tip').hidden=true);
+document.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse')return;const t=e.target.closest&&e.target.closest('[data-tip]');const tip=$('#tip');if(!t){tip.hidden=true;return}
+  tip.textContent=t.getAttribute('data-tip');tip.hidden=false;const w=tip.offsetWidth,h=tip.offsetHeight;let x=Math.min(Math.max(8,e.clientX-w/2),innerWidth-w-8),y=e.clientY-h-18;if(y<8)y=e.clientY+18;tip.style.left=x+'px';tip.style.top=y+'px';clearTimeout(tip._t);tip._t=setTimeout(()=>tip.hidden=true,3000)});
+window.addEventListener('scroll',()=>{const t=$('#tip');if(!t.hidden)t.hidden=true},{passive:true});
+
+/* ---------- boot ---------- */
+function setSync(on,msg){const s=$('#sync');s.className='sync '+(on?'on':'off');s.querySelector('span').textContent=msg}
+function sub(col,key){
+  S.db.collection(col).onSnapshot(snap=>{const m={};snap.docs.forEach(d=>{if(d.exists)m[d.id]=Object.assign({id:d.id},d.data())});S[key]=m;S.loaded[key]=true;setSync(true,'ذخیره روی همین گوشی');schedule()},
+    err=>{setSync(false,'اتصال قطع شد');S.loaded[key]=true;schedule()})}
+(async function boot(){
+  route();
+  if(!window.claude||!window.claude.use){setSync(false,'ذخیره‌سازی در دسترس نیست');$('#main').innerHTML='<div class="empty">این صفحه برای خواندن و ذخیره داده‌ها باید داخل Claude باز شود.</div>';return}
+  const db=await claude.use('db');
+  if(!db){setSync(false,'ذخیره‌سازی در دسترس نیست');$('#main').innerHTML='<div class="empty">دسترسی به داده‌ها در این نما ممکن نیست. صفحه را در حساب Claude خود باز کنید.</div>';return}
+  S.db=db;
+  claude.use('assets').then(a=>{S.assets=a;if(S.route==='add')render()});
+  claude.use('downloads').then(d=>{S.downloads=d;schedule()});
+  setTimeout(()=>{if(navigator.onLine)loadXLSX().catch(()=>{})},3000);
+  window.addEventListener('local-save-failed',()=>toast('ذخیره روی گوشی انجام نشد؛ فضای ذخیره‌سازی پر است.','bad'));
+  sub('vehicles','vehicles');sub('events','events');sub('rules','rules');sub('research','research');
+  db.doc('meta/settings').onSnapshot(d=>{S.settings=d.exists?Object.assign({},d.data()):{currency:'TRY',calendar:'gregorian',docWarnDays:null,categories:['بیمه ترافیک','بیمه کاسکو','معاینه فنی','مالیات خودرو (MTV)','عوارض و HGS','جریمه','پارکینگ','کارواش','لوازم جانبی','سایر'],serviceKinds:['سرویس دوره‌ای','تعویض روغن و فیلتر','لاستیک','باتری','ترمز','لنت','تهویه/کولر','سایر']};S.loaded.settings=true;schedule()},()=>{S.loaded.settings=true;schedule()});
+  render(true)})();
+</script>
+</body></html>
