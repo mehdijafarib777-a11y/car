@@ -203,7 +203,56 @@ small,.small{font-size:.82rem}
 .dot{width:11px;height:11px;border-radius:50%;flex:none;display:inline-block}
 .vname h3{font-size:1.05rem}
 .vmeta{font-size:.78rem;color:var(--muted)}
-.odo-row{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+.plate-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.plate{--plate-bg:#ffffff;--plate-ink:#111111;--eu-blue:#1f4fbf;--eu-star:#ffd400;direction:ltr;display:inline-flex;align-items:stretch;background:var(--plate-bg);color:var(--plate-ink);border:2px solid var(--plate-ink);border-radius:7px;overflow:hidden;min-height:44px;max-width:100%}
+.plate .band{background:var(--eu-blue);color:#ffffff;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:3px 5px;min-width:24px;font:700 .66rem/1 Arial,sans-serif}
+.plate .band svg{width:16px;height:16px;margin-bottom:2px}
+.plate .pn{display:flex;align-items:center;gap:7px;padding:0 13px;font:800 1.42rem/1 "Arial Narrow","Roboto Condensed",Arial,sans-serif;letter-spacing:.06em;white-space:nowrap}
+.plate .seals{display:inline-flex;flex-direction:column;gap:2px}
+.plate .seals i{width:11px;height:11px;border-radius:50%;display:block;border:1px solid #777777}
+.plate .seals i:first-child{background:#4c8dd6}
+.plate .seals i:last-child{background:#c8c8c8}
+.plate.ir .band{background:none;padding:0;flex-direction:row;align-items:stretch}
+.plate.ir .flag{display:flex;flex-direction:column;width:26px}
+.plate.ir .flag span{flex:1}
+.plate.ir .flag span:nth-child(1){background:#239f40}
+.plate.ir .flag span:nth-child(2){background:#ffffff}
+.plate.ir .flag span:nth-child(3){background:#da0000}
+.plate.ir .pn{font-family:var(--font);letter-spacing:.02em;gap:10px}
+.plate.ir .code{border-left:2px solid var(--plate-ink);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 9px;font-family:var(--font);line-height:1.1}
+.plate.ir .code small{font-size:.62rem;font-weight:700}
+.plate.ir .code b{font-size:1.1rem}
+.btn.big{min-height:52px;font-size:1rem;width:100%;border-radius:12px}
+.btn.big svg{width:22px;height:22px}
+.scrim{position:fixed;inset:0;background:rgba(8,12,10,.5);z-index:20}
+.sheet{position:fixed;z-index:21;left:50%;transform:translateX(-50%);bottom:0;width:min(100%,var(--col));max-height:92%;overflow:auto;background:var(--surface);color:var(--ink);border-radius:18px 18px 0 0;padding:10px max(16px,env(safe-area-inset-left,0px)) calc(16px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:12px;box-shadow:0 -10px 30px rgba(0,0,0,.2);direction:rtl}
+.sheet .grab{width:40px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 2px}
+.sheet .head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.sum{background:var(--surface-2);border-radius:12px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:.9rem}
+.sum b{font-size:1.25rem;font-variant-numeric:tabular-nums}
+.check{display:flex;align-items:center;gap:8px;font-size:.92rem}
+@media (prefers-reduced-motion:no-preference){.sheet{animation:sheetup .22s ease-out}@keyframes sheetup{from{transform:translate(-50%,30px);opacity:.6}to{transform:translate(-50%,0);opacity:1}}}
+.kpi-line{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.kpi-line b{font-size:1.45rem;font-weight:800;font-variant-numeric:tabular-nums}
+.legend{display:flex;flex-direction:column;gap:6px;font-size:.88rem}
+.legend div{display:flex;align-items:center;gap:8px}
+.legend .val{margin-inline-start:auto;font-variant-numeric:tabular-nums;font-weight:700}
+.seg button svg{width:16px;height:16px;vertical-align:-3px;margin-inline-end:4px}
+.seg button[disabled]{opacity:.4;cursor:not-allowed}
+.seg.wrap{flex-wrap:wrap;overflow:visible}
+.seg.wrap button{flex:1 1 30%}
+.chkrow{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-bottom:1px solid var(--line)}
+.chkrow:last-child{border-bottom:0}
+.chkrow .top{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.chkrow label.tog{display:flex;align-items:center;gap:8px;font-size:.92rem;font-weight:600}
+.donebox{display:flex;flex-direction:column;gap:6px;background:var(--good-soft);border-radius:10px;padding:8px 10px}
+.kmrow{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:var(--surface-2);border-radius:12px;padding:10px 12px}
+.kmrow .k{font-size:.76rem;color:var(--muted);display:block}
+.kmrow .v{font-weight:800;font-size:1.15rem}
+.kmrow .s{font-size:.72rem;color:var(--muted);display:block}
+.inline-edit{display:flex;flex-direction:column;gap:8px;width:100%}
+.inline-edit .bar{flex-wrap:nowrap}
+.inline-edit input{flex:1}
 .odo{display:inline-flex;direction:ltr;gap:3px;background:var(--ink);padding:5px;border-radius:8px}
 .odo span{display:inline-block;min-width:1.45em;text-align:center;background:var(--surface);color:var(--ink);font-weight:800;font-size:1.45rem;line-height:1.45;border-radius:4px}
 .odo span.lead{color:var(--muted);font-weight:500}
@@ -352,6 +401,7 @@ input[type=number],input[type=date]{direction:ltr;text-align:right}
     <a href="#service" data-nav><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg>سرویس</a>
   </nav>
 </div>
+<div id="sheet"></div>
 <div id="tip" class="tip" hidden></div>
 <div id="toast" class="toast" hidden></div>
 
@@ -362,6 +412,13 @@ const TYPES={fuel:'سوخت‌گیری',service:'سرویس',repair:'تعمیر'
 const CUR={TRY:'لیر',USD:'دلار',EUR:'یورو',IRR:'ریال'};
 const FUELS=['بنزین','دیزل','LPG','هیبرید','برقی'];
 const DOCTYPES=['بیمه ترافیک (Trafik)','بیمه کاسکو (Kasko)','معاینه فنی (TÜVTÜRK)','کارت خودرو (Ruhsat)','گواهینامه راننده','سایر'];
+const COUNTRIES={
+ TR:{name:'ترکیه',cur:'TRY',fmt:'34 ABC 123',re:/^(0[1-9]|[1-7]\d|8[01])\s?[A-Z]{1,3}\s?\d{2,4}$/,cold:1,hot:1},
+ DE:{name:'آلمان',cur:'EUR',fmt:'B AB 1234',re:/^[A-ZÄÖÜ]{1,3}[\s-]?[A-Z]{1,2}\s?\d{1,4}[EH]?$/,cold:1,hot:0},
+ IR:{name:'ایران',cur:'IRR',fmt:'12 ب 345 - 67',re:/^\d{2}\s?[\u0600-\u06FF]\s?\d{3}\s?-?\s?\d{2}$/,cold:1,hot:1},
+ XX:{name:'سایر',cur:null,fmt:'',re:/.+/,cold:0,hot:0}};
+const SEASONAL=[{id:'antifreeze',name:'بررسی ضدیخ رادیاتور',cold:1},{id:'wintertyre',name:'لاستیک زمستانی',cold:1},{id:'battery',name:'تست باتری پیش از سرما',cold:1},{id:'washer',name:'مایع شیشه‌شوی ضدیخ',cold:1},{id:'ac',name:'سرویس کولر پیش از تابستان',hot:1},{id:'cooling',name:'بررسی سیستم خنک‌کننده موتور',hot:1}];
+const LANGS={fa:'فارسی',en:'English',tr:'Türkçe'};
 const ROUTES=['dashboard','add','history','reports','service','research','prefs'];
 const STATE_UI={overdue:['bad','سررسید گذشته'],soon:['warn','نزدیک'],ok:['good','در موعد'],missing:['neutral','بدون سابقه']};
 const ICON={bad:'<svg viewBox="0 0 12 12"><path d="M6 1 11 10H1z" fill="currentColor"/></svg>',warn:'<svg viewBox="0 0 12 12"><circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 3v3.5" stroke="currentColor" stroke-width="2"/></svg>',good:'<svg viewBox="0 0 12 12"><path d="M2 6.5 5 9l5-6" fill="none" stroke="currentColor" stroke-width="2"/></svg>',neutral:'<svg viewBox="0 0 12 12"><circle cx="6" cy="6" r="4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="2 1.6"/></svg>'};
@@ -372,7 +429,8 @@ const S={db:null,assets:null,downloads:null,vehicles:{},events:{},rules:{},resea
   dashArch:false,dashVeh:'all',
   form:{type:'fuel',editId:null,confirm:false,issues:null},
   hist:{q:'',veh:'all',type:'all',from:'',to:'',sort:'date',dir:'desc',open:null,delAsk:null,showF:false},
-  rep:{veh:null,range:'all',from:'',to:''},
+  rep:{veh:null,range:'all',from:'',to:'',metric:'dist',ctype:'curve',sel:null},
+  fs:null,svcVeh:null,plateWarn:null,
   ruleEdit:null,addRule:false,vehEdit:null};
 
 /* ---------- helpers ---------- */
@@ -388,6 +446,10 @@ const _fm={};function fmtr(loc,opt){const k=loc+JSON.stringify(opt);return _fm[k
 function fmtDate(s,opt){if(!s)return '—';try{return fmtr('fa-IR-u-ca-'+cal(),opt||{year:'numeric',month:'short',day:'numeric'}).format(parseD(s))}catch(e){return s}}
 function fmtStamp(s){if(!s)return '—';try{return fmtr('fa-IR-u-ca-'+cal(),{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}).format(new Date(s))}catch(e){return s}}
 const curDefault=()=>(S.settings&&S.settings.currency)||'TRY';
+const country=()=>(S.settings&&COUNTRIES[S.settings.country])?S.settings.country:'TR';
+const plateCountry=v=>(v&&COUNTRIES[v.plateCountry])?v.plateCountry:country();
+const faD=x=>String(x).replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d]);
+const enD=x=>String(x).replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d));
 const money=(n,c,d=0)=>n==null?'—':fa(n,d)+' '+(CUR[c]||c||'');
 const daysBetween=(a,b)=>Math.round((parseD(b)-parseD(a))/864e5);
 function addMonths(s,m){const d=parseD(s);const day=d.getDate();d.setDate(1);d.setMonth(d.getMonth()+m);const last=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();d.setDate(Math.min(day,last));return iso(d)}
@@ -435,7 +497,7 @@ function ruleStatus(r){
   const hist=evs(r.vehicleId).filter(e=>(e.type==='service'||e.type==='repair')&&(e.kinds||[]).includes(r.matchKind)).sort(sortEv);
   const last=hist[hist.length-1];
   if(!last)return {state:'missing',reason:`هیچ «${r.matchKind}» برای این خودرو ثبت نشده است. برای شروع یادآوری، آخرین انجام آن را در «ثبت رویداد» وارد کنید.`};
-  const dueDate=r.intervalMonths?addMonths(last.date,+r.intervalMonths):null;
+  const dueDate=(r.dueOverride&&r.dueOverride.after===last.id&&r.dueOverride.date)?r.dueOverride.date:(r.intervalMonths?addMonths(last.date,+r.intervalMonths):null);
   const dueKm=(r.intervalKm&&last.km!=null)?last.km+ +r.intervalKm:null;
   const t=todayISO();const dLeft=dueDate?daysBetween(t,dueDate):null;const kLeft=(dueKm!=null&&cur)?dueKm-cur.km:null;
   let state='ok';
@@ -462,7 +524,7 @@ function missingInfo(){
   const out=[];
   for(const v of activeV()){
     if(!v.purchaseDate)out.push({v,t:'تاریخ خرید ثبت نشده',go:'#prefs'});
-    if(!v.plate)out.push({v,t:'پلاک ثبت نشده (اختیاری)',go:'#prefs'});
+    if(!v.plate)out.push({v,t:'پلاک ثبت نشده',go:'#dashboard'});
     const docs=latestDocs(v.id).map(d=>d.docType);
     for(const dt of DOCTYPES.slice(0,3))if(!docs.includes(dt))out.push({v,t:`تاریخ انقضای ${dt} ثبت نشده`,go:'#add'});
     for(const e of evs(v.id).filter(e=>(e.type==='service'||e.type==='repair')&&amt(e)==null))out.push({v,t:`هزینه ${TYPES[e.type]} ${fmtDate(e.date)} ثبت نشده`,go:'#history'});
@@ -522,17 +584,188 @@ function sparkline(segs,color){if(segs.length<2)return '';const W=300,H=46,P=4;c
   return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="direction:ltr" aria-hidden="true"><path d="${d}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke"/><circle cx="${X(l)}" cy="${Y(segs[l].cons)}" r="3.5" fill="${color}"/></svg>`}
 
 /* ---------- views ---------- */
+
+function euStars(){let s='<svg viewBox="0 0 20 20" aria-hidden="true">';for(let i=0;i<12;i++){const a=i*Math.PI/6;s+=`<circle cx="${(10+7*Math.cos(a)).toFixed(2)}" cy="${(10+7*Math.sin(a)).toFixed(2)}" r="1.1" fill="var(--eu-star)"/>`}return s+'</svg>'}
+function plateHtml(p,c){c=c||'TR';const lab=`پلاک ${esc(p)}`;
+  if(c==='TR')return `<span class="plate" role="img" aria-label="${lab}"><span class="band">TR</span><span class="pn">${esc(p)}</span></span>`;
+  if(c==='DE'){const m=p.match(/^([A-ZÄÖÜ]{1,3})[\s-]?(.*)$/);return `<span class="plate" role="img" aria-label="${lab}"><span class="band">${euStars()}D</span><span class="pn">${esc(m?m[1]:p)}<span class="seals"><i></i><i></i></span>${esc(m?m[2]:'')}</span></span>`}
+  if(c==='IR'){const m=enD(p).replace(/\s|-/g,'').match(/^(\d{2})([؀-ۿ])(\d{3})(\d{2})$/);const flag='<span class="band"><span class="flag"><span></span><span></span><span></span></span></span>';
+    return m?`<span class="plate ir" role="img" aria-label="${lab}">${flag}<span class="pn"><span>${faD(m[1])}</span><span>${esc(m[2])}</span><span>${faD(m[3])}</span></span><span class="code"><small>ایران</small><b>${faD(m[4])}</b></span></span>`:`<span class="plate ir" role="img" aria-label="${lab}">${flag}<span class="pn">${esc(p)}</span></span>`}
+  return `<span class="plate" role="img" aria-label="${lab}"><span class="pn">${esc(p)}</span></span>`}
+function plateBlock(v){
+  const active=v.status!=='archived';
+  const pc=plateCountry(v),C=COUNTRIES[pc];
+  if(S.plateEdit===v.id)return `<div class="inline-edit"><label class="small muted" for="pl-in-${v.id}">پلاک ${esc(vname(v))} · ${esc(C.name)}${C.fmt?` · قالب <span dir="ltr">${esc(C.fmt)}</span>`:''}</label><div class="bar"><input id="pl-in-${v.id}" type="text" dir="ltr" autocapitalize="characters" autocomplete="off" placeholder="${esc(C.fmt)}" value="${esc(S.plateDraft??v.plate??'')}"><button class="btn primary sm" type="button" data-plsave="${v.id}">ذخیره</button><button class="btn sm" type="button" data-plcancel="1">انصراف</button></div>${S.plateWarn===v.id?'<div class="issues conflict">با قالب پلاک این کشور جور نیست. اگر مطمئنید، دوباره «ذخیره» را بزنید.</div>':''}<span class="small muted">کشور پلاک را در «تنظیمات ← ویرایش خودرو» می‌توانید جدا از کشور اپ انتخاب کنید.</span></div>`;
+  if(v.plate)return `<div class="plate-row">${plateHtml(v.plate,pc)}${active?`<button class="btn link small" type="button" data-pledit="${v.id}">ویرایش پلاک</button>`:''}</div>`;
+  return active?`<div class="plate-row"><button class="btn sm" type="button" data-pledit="${v.id}">افزودن پلاک</button><span class="small muted">پلاک ثبت نشده</span></div>`:''}
+function kmBlock(v,o){
+  const active=v.status!=='archived';const iss=S.kmIssue&&S.kmIssue.vid===v.id?S.kmIssue:null;
+  if(S.kmEdit===v.id)return `<div class="inline-edit kmrow"><label class="small muted" for="km-in-${v.id}">کیلومتر فعلی امروز (${fmtDate(todayISO())})</label>
+    <div class="bar"><input id="km-in-${v.id}" type="number" inputmode="numeric" step="1" min="0" placeholder="${o?Math.round(o.km):''}" value="${esc(S.kmDraft??'')}"><button class="btn primary sm" type="button" data-kmsave="${v.id}">ذخیره</button><button class="btn sm" type="button" data-kmcancel="1">انصراف</button></div>
+    ${o?`<span class="small muted">آخرین ثبت: ${fa(o.km,1)} در ${fmtDate(o.date)}</span>`:''}
+    ${iss&&iss.err?`<div class="issues error">${esc(iss.err)}</div>`:''}
+    ${iss&&iss.con?`<div class="issues conflict"><ul>${iss.con.map(x=>`<li>${esc(x)}</li>`).join('')}</ul><div class="bar"><button class="btn sm" type="button" data-kmfix="1">اصلاح می‌کنم</button><button class="btn primary sm" type="button" data-kmforce="${v.id}">درست است، ثبت کن</button></div></div>`:''}</div>`;
+  return `<div class="kmrow"><div><span class="k">کیلومتر فعلی</span><span class="v num">${o?fa(o.km,1):'—'}</span><span class="s">${o?'آخرین ثبت '+fmtDate(o.date)+((o.approx||[]).includes('km')?' (تقریبی)':''):'هنوز کیلومتری ثبت نشده'}</span></div>${active?`<button class="btn sm" type="button" data-kmedit="${v.id}">به‌روزرسانی کیلومتر</button>`:''}</div>`}
+async function saveKm(vid,force){
+  const el=$('#km-in-'+vid);const raw=el?el.value.trim():'';S.kmDraft=raw;
+  const km=Number(raw);
+  if(raw===''||!Number.isFinite(km)||km<0){S.kmIssue={vid,err:'کیلومتر را به عدد وارد کنید.'};render(true);return}
+  const e={type:'odometer',vehicleId:vid,date:todayISO(),km,note:'به‌روزرسانی کیلومتر از داشبورد'};
+  const r=validate(e,null);
+  if(r.err.length){S.kmIssue={vid,err:r.err.join(' ')};render(true);return}
+  if(r.con.length&&!force){S.kmIssue={vid,con:r.con};render(true);return}
+  const doc=Object.assign({},e,{source:'user',createdAt:new Date().toISOString()});if(r.con.length)doc.confirmedWarnings=r.con;
+  S.editing=false;
+  if(await put('events/'+uid('e'),doc,'کیلومتر به‌روز شد')){S.kmEdit=null;S.kmDraft=null;S.kmIssue=null}
+  render(true)}
+async function savePlate(vid){
+  const el=$('#pl-in-'+vid);const pc=plateCountry(vById(vid));let p=enD(el?el.value:'').replace(/\s+/g,' ').trim();if(pc!=='IR')p=p.toUpperCase();S.plateDraft=el?el.value:null;
+  if(p&&!COUNTRIES[pc].re.test(p)&&S.plateWarn!==vid){S.plateWarn=vid;render(true);return}
+  if(p&&V().some(x=>x.id!==vid&&(x.plate||'').toUpperCase().replace(/\s+/g,' ').trim()===p)){toast('این پلاک برای خودروی دیگری ثبت شده است.','bad');return}
+  S.editing=false;
+  if(await patch('vehicles/'+vid,{plate:p||null},p?'پلاک ذخیره شد':'پلاک حذف شد')){S.plateEdit=null;S.plateDraft=null;S.plateWarn=null}
+  render(true)}
+
+const FUEL_ICON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21V5a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v16"/><path d="M3 21h13M7 8h5"/><path d="M15 10h2a2 2 0 0 1 2 2v4a1.5 1.5 0 0 0 3 0V8l-3-3"/></svg>';
+/* ---- quick fuel sheet ---- */
+function openFuel(vid){const f=fuelSeries(vid).fills;const lf=f[f.length-1];
+  S.fs={vid,d:todayISO(),km:'',l:'',p:lf&&lf.ppl!=null?String(lf.ppl):'',s:lf&&lf.station?lf.station:'',full:true,cur:curDefault(),err:null,con:null};
+  renderSheet();setTimeout(()=>{const e=$('#fs-km');if(e)e.focus()},80)}
+function fsTotal(){const l=parseFloat(enD(S.fs.l)),p=parseFloat(enD(S.fs.p));return l>0&&p>0?Math.round(l*p*100)/100:null}
+function renderSheet(){
+  const box=$('#sheet');if(!box)return;const f=S.fs;if(!f){box.innerHTML='';return}
+  const v=vById(f.vid),o=odo(f.vid),tot=fsTotal();
+  box.innerHTML=`<div class="scrim" data-fsclose="1"></div><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="fs-t"><div class="grab"></div>
+   <div class="head"><h3 id="fs-t">سوخت‌گیری · ${esc(vname(v))}</h3><button class="btn link" type="button" data-fsclose="1">انصراف</button></div>
+   <div class="fgrid">
+    <div class="field"><label for="fs-d">تاریخ</label><input id="fs-d" type="date" value="${esc(f.d)}"></div>
+    <div class="field"><label for="fs-km">کیلومتر</label><input id="fs-km" type="number" inputmode="numeric" step="1" placeholder="${o?Math.round(o.km):''}" value="${esc(f.km)}"><span class="hint">${o?'آخرین: '+fa(o.km,1)+' · '+fmtDate(o.date):''}</span></div>
+    <div class="field"><label for="fs-l">لیتر</label><input id="fs-l" type="number" inputmode="decimal" step="0.01" value="${esc(f.l)}"></div>
+    <div class="field"><label for="fs-p">قیمت هر لیتر (${esc(CUR[f.cur]||f.cur)})</label><input id="fs-p" type="number" inputmode="decimal" step="0.01" value="${esc(f.p)}"></div>
+    <div class="field wide"><label for="fs-s">جایگاه</label><input id="fs-s" type="text" list="fs-stations" value="${esc(f.s)}"><datalist id="fs-stations">${[...new Set(evs(f.vid).filter(e=>e.station).map(e=>e.station))].map(x=>`<option value="${esc(x)}">`).join('')}</datalist></div>
+    <label class="check wide"><input id="fs-full" type="checkbox" ${f.full?'checked':''}> باک را پر کردم</label>
+   </div>
+   <div class="sum"><span>مبلغ کل (لیتر × قیمت)</span><b id="fs-tot">${tot!=null?money(tot,f.cur,2):'—'}</b></div>
+   ${f.err?`<div class="issues error">${f.err.map(esc).join('<br>')}</div>`:''}
+   ${f.con?`<div class="issues conflict"><ul>${f.con.map(x=>`<li>${esc(x)}</li>`).join('')}</ul><div class="bar"><button class="btn sm" type="button" data-fsfix="1">اصلاح می‌کنم</button><button class="btn primary sm" type="button" data-fsforce="1">درست است، ثبت کن</button></div></div>`:''}
+   <button class="btn primary big" type="button" data-fssave="1">ثبت</button></div>`}
+function readFs(){const f=S.fs;if(!f)return;['d','km','l','p','s'].forEach(k=>{const e=$('#fs-'+k);if(e)f[k]=e.value});const c=$('#fs-full');if(c)f.full=c.checked}
+async function saveFuelSheet(force){
+  readFs();const f=S.fs;f.err=null;f.con=null;
+  const n=x=>{const t=enD(x).trim();return t===''?null:Number(t)};
+  const e={type:'fuel',vehicleId:f.vid,date:f.d,km:n(f.km),liters:n(f.l),ppl:n(f.p),total:fsTotal(),station:f.s.trim()||null,fuelType:null,fullTank:f.full,currency:f.cur,note:null};
+  const r=validate(e,null);const err=r.err.slice();if(e.ppl==null)err.push('قیمت هر لیتر را وارد کنید.');if(e.km==null)err.push('کیلومتر را وارد کنید.');
+  if(err.length){f.err=err;renderSheet();return}
+  if(r.con.length&&!force){f.con=r.con;renderSheet();return}
+  const doc=Object.assign(e,{source:'user',createdAt:new Date().toISOString()});if(r.con.length)doc.confirmedWarnings=r.con;
+  if(await put('events/'+uid('e'),doc,'ثبت شد · تاریخچه، کیلومتر و نمودارها به‌روز شدند')){S.fs=null;renderSheet()}}
+document.addEventListener('input',e=>{if(!S.fs||!e.target.id||!e.target.id.startsWith('fs-'))return;readFs();const t=fsTotal();const b=$('#fs-tot');if(b)b.textContent=t!=null?money(t,S.fs.cur,2):'—'});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-fsclose],[data-fssave],[data-fsforce],[data-fsfix]');if(!b||!S.fs)return;
+  if(b.dataset.fsclose){S.fs=null;renderSheet()}else if(b.dataset.fssave)saveFuelSheet(false);else if(b.dataset.fsforce)saveFuelSheet(true);else if(b.dataset.fsfix){readFs();S.fs.con=null;renderSheet();const k=$('#fs-km');if(k)k.focus()}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.fs){S.fs=null;renderSheet()}});
+
+/* ---- seasonal checks ---- */
+const seasonRuleId=(vid,cid)=>'season-'+vid+'-'+cid;
+function seasonSuggested(c){const C=COUNTRIES[country()];return !!((c.cold&&C.cold)||(c.hot&&C.hot))}
+function seasonOn(vid,c){const r=S.rules[seasonRuleId(vid,c.id)];return r?r.status==='active':seasonSuggested(c)}
+async function seasonToggle(vid,cid,on){const c=SEASONAL.find(x=>x.id===cid);const id=seasonRuleId(vid,cid);const r=S.rules[id];
+  if(r){await patch('rules/'+id,{status:on?'active':'dismissed'},on?'فعال شد':'غیرفعال شد')}
+  else await put('rules/'+id,{vehicleId:vid,item:c.name,matchKind:c.name,intervalMonths:12,intervalKm:null,warnDays:null,warnKm:null,status:on?'active':'dismissed',source:'season',seasonal:true},on?'فعال شد':'غیرفعال شد')}
+async function seasonDone(vid,cid){const c=SEASONAL.find(x=>x.id===cid);const id=seasonRuleId(vid,cid);
+  if(!S.rules[id]||S.rules[id].status!=='active')await put('rules/'+id,Object.assign({},S.rules[id]||{},{vehicleId:vid,item:c.name,matchKind:c.name,intervalMonths:12,intervalKm:null,warnDays:null,warnKm:null,status:'active',source:'season',seasonal:true}),false);
+  await put('events/'+uid('e'),{type:'service',vehicleId:vid,date:todayISO(),km:null,kinds:[c.name],parts:null,labor:null,partsCost:null,shop:null,currency:curDefault(),note:'بازدید فصلی',source:'user',createdAt:new Date().toISOString()},'ثبت شد؛ بازدید بعدی پیشنهاد شد')}
+function seasonPanel(){
+  const av=activeV();if(!av.length)return '';if(!S.svcVeh||!av.some(v=>v.id===S.svcVeh))S.svcVeh=av[0].id;const vid=S.svcVeh,C=COUNTRIES[country()];
+  const rows=SEASONAL.map(c=>{const on=seasonOn(vid,c),sug=seasonSuggested(c),r=S.rules[seasonRuleId(vid,c.id)];const st=r&&r.status==='active'?ruleStatus(r):null;
+    return `<div class="chkrow"><div class="top"><label class="tog"><input type="checkbox" data-season="${vid}|${c.id}" ${on?'checked':''}> ${esc(c.name)}</label>${sug?'':'<span class="small muted">برای این آب‌وهوا پیشنهاد نمی‌شود</span>'}${st&&st.last?pill(st.state):''}</div>
+     ${on?(st&&st.last?`<div class="donebox"><span class="small">آخرین انجام: ${fmtDate(st.last.date)}</span><label class="small muted" for="sn-${r.id}">بعدی (پیشنهاد یک سال بعد، قابل تغییر)</label><input id="sn-${r.id}" type="date" data-snext="${r.id}" value="${esc(st.dueDate||'')}"><button class="btn sm" type="button" data-sdone="${vid}|${c.id}">دوباره انجام شد، امروز</button></div>`:`<button class="btn sm" type="button" data-sdone="${vid}|${c.id}" style="align-self:flex-start">انجام شد، امروز</button>`):''}</div>`}).join('');
+  return `<section class="panel"><div class="section-h"><h3>بازدیدهای فصلی</h3><span class="small muted">${esc(C.name)}${C.cold?' · سرد':''}${C.hot?' · گرم':''}</span></div>
+   <div class="vswitch" role="group" aria-label="خودرو">${av.map(v=>`<button type="button" data-sveh="${v.id}" aria-pressed="${v.id===vid}"><span class="dot" style="background:${vcol(v)}"></span>${esc(vname(v))}</button>`).join('')}</div>
+   <div class="list">${rows}</div>
+   <p class="small muted" style="margin:0">بر اساس آب‌وهوای کشوری که در تنظیمات انتخاب کرده‌اید پیشنهاد می‌شوند و هر کدام را می‌توانید روشن یا خاموش کنید. زمان دقیق یا الزام قانونی (مثلاً لاستیک زمستانی) بعداً با منبع رسمی هر کشور اضافه می‌شود. آستانه هشدار پیش از موعد را از «ویرایش» هر یادآوری تعیین کنید.</p></section>`}
+
+/* ---- selectable charts ---- */
+const CT_ICON={curve:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12C4 12 5 5 8 6s4 5 7-2"/></svg>',bar:'<svg viewBox="0 0 16 16" fill="currentColor"><rect x="2" y="7" width="3" height="7" rx="1"/><rect x="6.5" y="3" width="3" height="11" rx="1"/><rect x="11" y="9" width="3" height="5" rx="1"/></svg>',pie:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="3"><circle cx="8" cy="8" r="5.5" stroke-dasharray="22 13"/></svg>'};
+function niceMax(v){if(v<=0)return 1;const m=Math.pow(10,Math.floor(Math.log10(v))),e=v/m;return (e<=1?1:e<=2?2:e<=2.5?2.5:e<=5?5:10)*m}
+function smoothPath(P){if(P.length<2)return '';const n=P.length,dx=[],dy=[],sl=[],mm=[];for(let i=0;i<n-1;i++){dx[i]=P[i+1][0]-P[i][0];dy[i]=P[i+1][1]-P[i][1];sl[i]=dx[i]?dy[i]/dx[i]:0}
+  mm[0]=sl[0];mm[n-1]=sl[n-2];for(let i=1;i<n-1;i++)mm[i]=sl[i-1]*sl[i]<=0?0:(sl[i-1]+sl[i])/2;
+  for(let i=0;i<n-1;i++){if(sl[i]===0){mm[i]=mm[i+1]=0;continue}const a=mm[i]/sl[i],b=mm[i+1]/sl[i],h=a*a+b*b;if(h>9){const k=3/Math.sqrt(h);mm[i]=k*a*sl[i];mm[i+1]=k*b*sl[i]}}
+  let d=`M${P[0][0].toFixed(1)},${P[0][1].toFixed(1)}`;for(let i=0;i<n-1;i++){const h=dx[i]/3;d+=`C${(P[i][0]+h).toFixed(1)},${(P[i][1]+mm[i]*h).toFixed(1)} ${(P[i+1][0]-h).toFixed(1)},${(P[i+1][1]-mm[i+1]*h).toFixed(1)} ${P[i+1][0].toFixed(1)},${P[i+1][1].toFixed(1)}`}return d}
+function xyChart(pts,type,color,fmtV){
+  const W=360,H=210,L=40,Rr=12,Tp=16,B=26;if(!pts.length)return '<div class="empty">داده‌ای برای این بازه نیست.</div>';
+  const max=niceMax(Math.max(...pts.map(p=>p.v))*1.08);const n=pts.length,sel=S.rep.sel;
+  const X=i=>type==='bar'?L+(i+.5)*(W-L-Rr)/n:L+(n===1?(W-L-Rr)/2:i*(W-L-Rr)/(n-1)),Y=v=>Tp+(1-v/max)*(H-Tp-B);
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img"><g class="grid">`;for(let k=0;k<=4;k++){const v=max*k/4;s+=`<line x1="${L}" x2="${W-Rr}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${L-6}" y="${Y(v)+3.5}" text-anchor="end">${fa(v,max<20?1:0)}</text>`}s+='</g>';
+  const every=Math.ceil(n/5);pts.forEach((p,i)=>{if(i%every===0||i===n-1)s+=`<text x="${X(i)}" y="${H-8}" text-anchor="${type==='bar'?'middle':i===0?'start':i===n-1?'end':'middle'}">${esc(p.lab)}</text>`});
+  if(type==='bar'){const bw=Math.max(3,(W-L-Rr)/n*.62);pts.forEach((p,i)=>{const y=Y(p.v),h=Y(0)-y,x=X(i)-bw/2,r=Math.min(4,bw/2,h);
+      if(h>0)s+=`<path d="M${x.toFixed(1)},${Y(0)}V${(y+r).toFixed(1)}Q${x.toFixed(1)},${y.toFixed(1)} ${(x+r).toFixed(1)},${y.toFixed(1)}H${(x+bw-r).toFixed(1)}Q${(x+bw).toFixed(1)},${y.toFixed(1)} ${(x+bw).toFixed(1)},${(y+r).toFixed(1)}V${Y(0)}Z" fill="${color}" opacity="${sel==null||sel===i?1:.45}"/>`;
+      s+=`<rect x="${(X(i)-(W-L-Rr)/n/2).toFixed(1)}" y="${Tp}" width="${((W-L-Rr)/n).toFixed(1)}" height="${H-Tp-B}" fill="transparent" data-ci="${i}" style="cursor:pointer"/>`});
+    const mi=pts.reduce((m,p,i)=>p.v>pts[m].v?i:m,0);s+=`<text x="${X(mi)}" y="${Y(pts[mi].v)-5}" text-anchor="middle" style="fill:var(--ink);font-weight:700">${fmtV(pts[mi].v)}</text>`}
+  else{const P=pts.map((p,i)=>[X(i),Y(p.v)]);const d=smoothPath(P)||`M${P[0][0]},${P[0][1]}`;
+    if(n>1)s+=`<path d="${d}L${P[n-1][0]},${Y(0)}L${P[0][0]},${Y(0)}Z" fill="${color}" opacity=".12"/><path d="${d}" fill="none" stroke="${color}" stroke-width="2.4" stroke-linecap="round"/>`;
+    P.forEach((q,i)=>{const big=i===n-1||sel===i;s+=`<circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="${big?4.5:2.6}" fill="${color}" stroke="var(--surface)" stroke-width="${big?2:1}"/><circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="13" fill="transparent" data-ci="${i}" style="cursor:pointer"/>`});
+    s+=`<text x="${P[n-1][0].toFixed(1)}" y="${(P[n-1][1]-9).toFixed(1)}" text-anchor="end" style="fill:var(--ink);font-weight:700">${fmtV(pts[n-1].v)}</text>`}
+  return s+'</svg>'}
+function donut(parts,unit,fmtV){
+  const tot=parts.reduce((s,p)=>s+p.v,0);if(!tot)return '<div class="empty">داده‌ای برای این بازه نیست.</div>';
+  const R1=70,r1=46,cx=90,cy=90;let a=-Math.PI/2;let s=`<svg viewBox="0 0 180 180" style="max-width:220px;margin:0 auto;direction:ltr" role="img">`;
+  parts.forEach((p,i)=>{const da=p.v/tot*2*Math.PI;const gap=parts.length>1?.03:0;const a0=a+gap/2,a1=a+da-gap/2;a+=da;if(a1<=a0)return;const lg=a1-a0>Math.PI?1:0;const P=(rad,ang)=>[cx+rad*Math.cos(ang),cy+rad*Math.sin(ang)];
+    if(da>=2*Math.PI-1e-6){s+=`<circle cx="${cx}" cy="${cy}" r="${(R1+r1)/2}" fill="none" stroke="${p.color}" stroke-width="${R1-r1}" data-ci="${i}"/>`;return}
+    const [x0,y0]=P(R1,a0),[x1,y1]=P(R1,a1),[x2,y2]=P(r1,a1),[x3,y3]=P(r1,a0);
+    s+=`<path d="M${x0.toFixed(2)},${y0.toFixed(2)}A${R1},${R1} 0 ${lg} 1 ${x1.toFixed(2)},${y1.toFixed(2)}L${x2.toFixed(2)},${y2.toFixed(2)}A${r1},${r1} 0 ${lg} 0 ${x3.toFixed(2)},${y3.toFixed(2)}Z" fill="${p.color}" opacity="${S.rep.sel==null||S.rep.sel===i?1:.45}" data-ci="${i}" style="cursor:pointer"/>`});
+  s+=`<text x="${cx}" y="${cy-2}" text-anchor="middle" style="fill:var(--ink);font-size:16px;font-weight:800">${fmtV(tot)}</text><text x="${cx}" y="${cy+16}" text-anchor="middle">${esc(unit)}</text></svg>`;
+  return s+`<div class="legend">${parts.map(p=>`<div><span class="dot" style="background:${p.color}"></span>${esc(p.name)}<span class="val">${fmtV(p.v)} · ${fa(p.v/tot*100,0)}٪</span></div>`).join('')}</div>`}
+function hbarList(parts,fmtV){const mx=Math.max(...parts.map(p=>p.v),1);return parts.length?`<div class="hbars">${parts.map(p=>`<div class="hbar"><span><span class="dot" style="background:${p.color}"></span> ${esc(p.name)}</span><span class="num">${fmtV(p.v)}</span><div class="track"><div class="fill" style="width:${(p.v/mx*100).toFixed(1)}%;background:${p.color}"></div></div></div>`).join('')}</div>`:'<div class="empty">داده‌ای برای این بازه نیست.</div>'}
+function distSpread(vid,B){const r=evs(vid).filter(e=>e.km!=null).sort(sortEv);const acc={};
+  for(let i=1;i<r.length;i++){const a=r[i-1],b=r[i];const n=daysBetween(a.date,b.date),km=b.km-a.km;if(n<=0||km<=0)continue;const d=parseD(a.date);
+    for(let k=0;k<n;k++){d.setDate(d.getDate()+1);const ds=iso(d);if(B&&((B[0]&&ds<B[0])||(B[1]&&ds>B[1])))continue;const p=calParts(ds);const key=p.y+'-'+String(p.m).padStart(2,'0');acc[key]=(acc[key]||0)+km/n}}
+  return acc}
+const PALETTE=['var(--v1)','var(--v2)','var(--v3)','var(--v4)','var(--v5)','var(--v6)','var(--v7)','var(--v8)'];
+function chartPanel(d){
+  const M=S.rep.metric,c=mainCur(d.cost)||curDefault(),v=d.v,col=vcol(v);const share=M==='share'||M==='cat';
+  const ctype=share?(S.rep.ctype==='bar'?'bar':'pie'):(S.rep.ctype==='bar'?'bar':'curve');
+  const start=d.B[0]||(d.all[0]&&d.all[0].date)||todayISO(),end=d.B[1]||(d.all.length?d.all[d.all.length-1].date:todayISO());
+  const months=monthBuckets(start,end);let body='',kpi='',cap='',read='';
+  if(M==='dist'||M==='cost'){
+    let acc={};if(M==='dist')acc=distSpread(d.vid,d.B);else for(const f of d.fills){if((f.currency||curDefault())!==c||amt(f)==null)continue;const p=calParts(f.date);const k=p.y+'-'+String(p.m).padStart(2,'0');acc[k]=(acc[k]||0)+amt(f)}
+    const pts=months.map(m=>({lab:m.label,v:Math.round(acc[m.key]||0),full:fmtDate(m.first,{year:'numeric',month:'long'})}));
+    const tot=pts.reduce((s,p)=>s+p.v,0);const fmtV=M==='dist'?(x=>fa(x)):(x=>fa(x));
+    kpi=M==='dist'?fa(tot)+' کیلومتر':money(tot,c);cap=M==='dist'?'برآورد: مسافت بین هر دو ثبت کیلومتر به‌طور مساوی بین روزهای آن فاصله تقسیم شده است.':'جمع مبلغ سوخت‌گیری‌ها در هر ماه'+(Object.keys(d.fuelCost).length>1?'؛ فقط واحد '+(CUR[c]||c)+' (تبدیل ارز انجام نمی‌شود).':'.');
+    body=xyChart(pts,ctype,col,fmtV);const sp=S.rep.sel!=null&&pts[S.rep.sel];read=sp?`${sp.full}: ${M==='dist'?fa(sp.v)+' کیلومتر':money(sp.v,c)}`:''}
+  else if(M==='cons'||M==='ppl'){
+    const pts=M==='cons'?d.segs.map(x=>({lab:fmtDate(x.date,{month:'short',year:'2-digit'}),v:+x.cons.toFixed(2),full:fmtDate(x.date),extra:fa(x.dist)+' کیلومتر · '+fa(x.liters,2)+' لیتر'})):d.fills.filter(f=>f.ppl!=null).map(f=>({lab:fmtDate(f.date,{month:'short',year:'2-digit'}),v:f.ppl,full:fmtDate(f.date),extra:(f.station||'')+' · '+(CUR[f.currency]||f.currency||'')}));
+    kpi=M==='cons'?(d.st?fa(d.st.avg,2)+' لیتر/۱۰۰ کیلومتر':'—'):(pts.length?fa(pts[pts.length-1].v,2)+' آخرین قیمت':'—');
+    cap=M==='cons'?'هر نقطه = لیتر ÷ مسافت از سوخت‌گیری باک‌پر قبلی × ۱۰۰؛ عدد بالا میانگین وزنی بازه است.':'قیمت پرداختی هر لیتر در هر سوخت‌گیری، طبق ثبت شما.';
+    body=xyChart(pts,ctype,col,x=>fa(x,1));const sp=S.rep.sel!=null&&pts[S.rep.sel];read=sp?`${sp.full}: ${fa(sp.v,2)} · ${sp.extra}`:''}
+  else if(M==='share'){
+    const parts=V().filter(x=>x.status!=='archived'||x.id===d.vid).map(x=>{const a=distSpread(x.id,d.B);return {name:vname(x),v:Math.round(Object.values(a).reduce((s,y)=>s+y,0)),color:vcol(x)}}).filter(p=>p.v>0);
+    kpi=fa(parts.reduce((s,p)=>s+p.v,0))+' کیلومتر';cap='سهم هر خودرو از مسافت کل بازه (همان برآورد مسافت ماهانه).';
+    body=ctype==='bar'?hbarList(parts,x=>fa(x)+' کیلومتر'):donut(parts,'کیلومتر',x=>fa(x));const sp=S.rep.sel!=null&&parts[S.rep.sel];read=sp?`${sp.name}: ${fa(sp.v)} کیلومتر`:''}
+  else{
+    const cats={};for(const e of d.inr){const a=amt(e);if(a==null||(e.currency||curDefault())!==c)continue;cats[cat(e)]=(cats[cat(e)]||0)+a}
+    const parts=Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([k,x],i)=>({name:k,v:x,color:PALETTE[i%PALETTE.length]}));
+    kpi=money(parts.reduce((s,p)=>s+p.v,0),c);cap='فقط رویدادهای دارای مبلغ'+(d.inr.some(e=>(e.type==='service'||e.type==='repair')&&amt(e)==null)?'؛ بعضی سرویس‌ها مبلغ ندارند و در این جمع نیستند.':'.');
+    body=ctype==='bar'?hbarList(parts,x=>money(x,c)):donut(parts,CUR[c]||c,x=>fa(x));const sp=S.rep.sel!=null&&parts[S.rep.sel];read=sp?`${sp.name}: ${money(sp.v,c)}`:''}
+  const metrics=[['dist','مسافت ماهانه'],['cons','مصرف سوخت'],['cost','هزینه سوخت'],['ppl','قیمت هر لیتر'],['share','سهم مسافت'],['cat','هزینه بر اساس دسته']];
+  return `<section class="panel"><h3>نمودارها</h3>
+   <div class="seg wrap" role="group" aria-label="شاخص">${metrics.map(([k,t])=>`<button type="button" data-metric="${k}" aria-pressed="${M===k}">${t}</button>`).join('')}</div>
+   <div class="seg" role="group" aria-label="نوع نمودار">${[['curve','منحنی'],['bar','ستونی'],['pie','دایره‌ای']].map(([k,t])=>`<button type="button" data-ctype="${k}" aria-pressed="${ctype===k}" ${share?(k==='curve'?'disabled':''):(k==='pie'?'disabled':'')}>${CT_ICON[k]}${t}</button>`).join('')}</div>
+   <div class="kpi-line"><b>${kpi}</b><span class="small muted">${share&&M==='share'?'همه خودروها':esc(vname(v))}</span></div>
+   <div class="chart">${body}</div>
+   <div class="chart-read">${read?esc(read):'<span class="muted small">روی هر نقطه، ستون یا بخش بزنید تا مقدارش را ببینید.</span>'}</div>
+   <p class="chart-cap" style="margin:0">${esc(cap)} ${share?'':'«دایره‌ای» فقط برای سهم‌ها فعال است.'}</p></section>`}
+
 function vehicleCard(v){
   const o=odo(v.id);const {fills,segs}=fuelSeries(v.id);const st=consStats(segs);const lastFill=fills[fills.length-1];
   const ys=startOfYear(),ms=startOfMonth();const yc=sumCur(evs(v.id).filter(e=>e.date>=ys)),mc=sumCur(evs(v.id).filter(e=>e.date>=ms));
   const rem=allReminders(v.id);const worst=rem[0];
-  const digits=o?String(Math.round(o.km)).padStart(6,'0'):'------';let lead=true;
-  const odoHtml=[...digits].map(ch=>{const isLead=lead&&ch==='0';if(ch!=='0')lead=false;return `<span class="${isLead?'lead':''}">${ch==='-'?'–':fa(+ch)}</span>`}).join('');
   const spec=[v.year?fa(v.year).replace(/٬/g,''):null,v.chassis,v.fuel,v.gearbox,v.market?'بازار '+v.market:null].filter(Boolean).join(' · ');
   return `<article class="vcard${v.status==='archived'?' arch':''}">
    <div class="vhead"><div><div class="vname"><span class="dot" style="background:${vcol(v)}"></span><h3>${esc((v.brand||'')+' '+(v.model||''))}</h3></div><div class="vmeta">${esc(spec)||'مشخصات ثبت نشده'}</div></div>
    ${v.status==='archived'?'<span class="pill neutral">بایگانی · نمونه</span>':worst?pill(worst.st.state,worst.st.state==='ok'?'یادآوری‌ها در موعد':worst.title+': '+STATE_UI[worst.st.state][1]):'<span class="pill neutral">یادآوری فعال ندارد</span>'}</div>
-   <div class="odo-row"><span class="odo" aria-label="کیلومتر">${odoHtml}</span><span class="small muted">کیلومتر · آخرین ثبت ${o?fmtDate(o.date):'—'}${o&&(o.approx||[]).includes('km')?' (تقریبی)':''}</span></div>
+   ${plateBlock(v)}
+   ${kmBlock(v,o)}
+   ${v.status!=='archived'?`<button class="btn primary big" type="button" data-fuel="${v.id}">${FUEL_ICON}ثبت سوخت‌گیری</button>`:''}
    <div class="stats">
     <div class="stat"><span class="k">میانگین مصرف <span class="chip calc">محاسبه</span></span><span class="v">${st?fa(st.avg,1)+' <small>لیتر/۱۰۰ کیلومتر</small>':'—'}</span><span class="s">${st?'از '+fa(st.n)+' دوره باک‌پر، '+fa(st.D)+' کیلومتر':'دست‌کم دو سوخت‌گیری باک‌پر با کیلومتر لازم است'}</span></div>
     <div class="stat"><span class="k">مصرف آخرین دوره</span><span class="v">${st?fa(st.last.cons,1):'—'}</span><span class="s">${st?fmtDate(st.last.date)+' · '+fa(st.last.dist)+' کیلومتر':''}</span></div>
@@ -764,8 +997,6 @@ function vReports(){
   // ownership (whole history)
   const allCost=sumCur(d.all);const oc=mainCur(allCost);const first=d.all.find(e=>e.km!=null),cur=odo(d.vid);
   const ownKm=(first&&cur)?cur.km-first.km:null;const ownMonths=d.all.length?Math.max(1,daysBetween(d.all[0].date,todayISO())/30.44):null;
-  const priceSeries=d.fills.filter(f=>f.ppl!=null).map(f=>({date:f.date,y:f.ppl,tip:`${fmtDate(f.date)} · ${fa(f.ppl,2)} ${CUR[f.currency]||''} هر لیتر · ${f.station||''}`}));
-  const consSeries=d.segs.map(s=>({date:s.date,y:s.cons,tip:`${fmtDate(s.date)} · ${fa(s.cons,2)} لیتر/۱۰۰ کیلومتر · ${fa(s.dist)} کیلومتر · ${fa(s.liters,2)} لیتر`}));
   return `<div class="view-head"><h2>گزارش‌ها</h2><p>همه گزارش‌ها از رکوردهای ثبت‌شده ساخته می‌شوند. هرجا داده کافی نیست، عددی نمایش داده نمی‌شود.</p></div>
   <div class="vswitch" role="group" aria-label="خودرو">${V().map(x=>`<button type="button" data-rv="${x.id}" aria-pressed="${x.id===d.vid}"><span class="dot" style="background:${vcol(x)}"></span>${esc(vname(x))}${x.status==='archived'?' · بایگانی':''}</button>`).join('')}</div>
   <div class="seg" role="group" aria-label="بازه">${ranges.map(([k,t])=>`<button type="button" data-range="${k}" aria-pressed="${S.rep.range===k}">${t}</button>`).join('')}</div>
@@ -778,16 +1009,7 @@ function vReports(){
    <div class="kpi"><span class="k">میانگین مصرف</span><span class="v">${d.st?fa(d.st.avg,2):'—'}</span><span class="s">${d.st?`لیتر/۱۰۰ کیلومتر · ${fa(d.st.n)} دوره باک‌پر`:'دو سوخت‌گیری باک‌پر لازم است'}</span></div>
    <div class="kpi"><span class="k">هزینه سوخت</span><span class="v">${moneyMulti(d.fuelCost)}</span><span class="s">${fa(d.fills.length)} سوخت‌گیری · ${fa(d.fills.reduce((s,f)=>s+(f.liters||0),0),1)} لیتر</span></div>
   </div>
-  <div class="cols">
-   <section class="panel"><h3>روند مصرف سوخت (لیتر در ۱۰۰ کیلومتر)</h3><div class="chart">${lineChart({pts:consSeries,color:vcol(v),avg:d.st?d.st.avg:null,yd:1,label:'روند مصرف',empty:'برای نمودار مصرف دست‌کم سه سوخت‌گیری باک‌پر با کیلومتر لازم است.'})}</div><div class="chart-cap">هر نقطه یک دوره بین دو سوخت‌گیری باک‌پر است؛ خط‌چین میانگین وزنی بازه است. برای دیدن مقدار، روی نقطه بزنید.</div></section>
-   <section class="panel"><h3>قیمت هر لیتر</h3><div class="chart">${lineChart({pts:priceSeries,color:vcol(v),yd:0,label:'قیمت هر لیتر'})}</div><div class="chart-cap">قیمت پرداختی شما در هر سوخت‌گیری، طبق ثبت.</div></section>
-  </div>
-  <div class="cols-2">
-   <section class="panel"><div class="section-h"><h3>هزینه ماهانه${c?' ('+CUR[c]+')':''}</h3><span class="small muted"><span class="dot" style="background:${vcol(v)}"></span> سوخت &nbsp; <span class="dot" style="background:var(--muted)"></span> سایر</span></div>
-    <div class="chart">${c||!Object.keys(d.cost).length?barChart({label:'هزینه ماهانه',bars:months.map(m=>({label:m.label,parts:[{v:m.fuel,color:vcol(v)},{v:m.other,color:'var(--muted)'}],tip:`${fmtDate(m.first,{year:'numeric',month:'long'})} · سوخت ${fa(m.fuel)} · سایر ${fa(m.other)}`}))}):'<div class="empty">چند واحد پول در بازه؛ نمودار رسم نمی‌شود.</div>'}</div></section>
-   <section class="panel"><h3>هزینه بر اساس دسته</h3>${catArr.length?`<div class="hbars">${catArr.map(([k,x])=>`<div class="hbar"><span>${esc(k)}</span><span class="num">${money(x,c)}</span><div class="track"><div class="fill" style="width:${(x/catMax*100).toFixed(1)}%"></div></div></div>`).join('')}</div>`:'<div class="empty">در این بازه هزینه‌ای ثبت نشده است.</div>'}
-    ${d.inr.some(e=>(e.type==='service'||e.type==='repair')&&amt(e)==null)?'<div class="small muted">بعضی سرویس‌ها مبلغ ندارند و در این جمع نیستند.</div>':''}</section>
-  </div>
+  ${chartPanel(d)}
   <section class="panel"><h3>مالکیت ${esc(vname(v))} از اولین ثبت</h3>
    <div class="kpis">
     <div class="kpi"><span class="k">اولین ثبت</span><span class="v" style="font-size:1rem">${d.all.length?fmtDate(d.all[0].date):'—'}</span><span class="s">${first?fa(first.km,1)+' کیلومتر':''}</span></div>
@@ -817,7 +1039,7 @@ function ruleForm(r,prefix){
    <div class="field"><label for="${prefix}-wk">هشدار چند کیلومتر قبل</label><input id="${prefix}-wk" type="number" step="100" value="${esc(r&&r.warnKm!=null?r.warnKm:'')}"></div>
    <div class="wide bar"><button class="btn primary" type="button" data-rsave="${prefix}">${r&&r.status==='suggested'?'تأیید و فعال‌سازی':'ذخیره'}</button><button class="btn" type="button" data-rcancel="1">انصراف</button><span class="small muted">دست‌کم یکی از فاصله ماه یا کیلومتر لازم است.</span></div></div>`}
 function vService(){
-  const rules=Object.values(S.rules).filter(r=>{const v=vById(r.vehicleId);return v&&v.status!=='archived'&&r.status!=='dismissed'});
+  const rules=Object.values(S.rules).filter(r=>{const v=vById(r.vehicleId);return v&&v.status!=='archived'&&r.status!=='dismissed'&&!r.seasonal});
   const sv=evs('all').filter(e=>(e.type==='service'||e.type==='repair'||e.type==='accident')&&vById(e.vehicleId)&&vById(e.vehicleId).status!=='archived').sort(sortEv).reverse();
   const dw=S.settings?S.settings.docWarnDays:null;
   return `<div class="view-head"><div><h2>سرویس و یادآوری</h2><p>برنامه رسمی سازنده به‌صورت پیشنهاد و با منبع نمایش داده می‌شود. یادآوری فقط بعد از تأیید شما فعال می‌شود و هر فاصله‌ای را می‌توانید تغییر دهید.</p></div><button class="btn primary" type="button" id="rule-add">افزودن یادآوری</button></div>
@@ -833,6 +1055,7 @@ function vService(){
       ${ed?ruleForm(r,'r-'+r.id):`<div class="bar" style="margin-top:6px"><button class="btn sm" data-redit="${r.id}">${r.status==='suggested'?'بررسی و تأیید':'ویرایش'}</button>${r.status==='suggested'?`<button class="btn sm" data-rdismiss="${r.id}">رد پیشنهاد</button>`:''}</div>`}</div>
       </div>`}).join('')}</div>`:'<div class="empty">یادآوری‌ای برای این خودرو تعریف نشده است.</div>'}
    </section>`}).join('')}</div>
+  ${seasonPanel()}
   <section class="panel"><div class="section-h"><h3>مدارک و تاریخ انقضا</h3><a class="btn sm" href="#add" data-preset="document">ثبت مدرک</a></div>
    <div class="bar"><div class="field" style="max-width:240px"><label for="doc-warn">هشدار چند روز پیش از انقضا</label><input id="doc-warn" type="number" step="1" value="${dw!=null?dw:''}" placeholder="تعیین نشده"></div><button class="btn" type="button" id="doc-warn-save">ذخیره</button></div>
    ${(()=>{const docs=activeV().flatMap(v=>latestDocs(v.id));return docs.length?`<div class="list">${docs.map(e=>{const st=docStatus(e);return `<div class="li"><span class="dot" style="background:${vcol(vById(e.vehicleId))};margin-top:9px"></span><div class="body"><div class="li-top"><span class="t">${esc(e.docType)} · ${esc(vname(vById(e.vehicleId)))}</span>${pill(st.state)}</div><div class="why">${esc(st.reason)}</div></div></div>`}).join('')}</div>`:'<div class="empty">هنوز مدرکی ثبت نشده است. تاریخ انقضای بیمه ترافیک، کاسکو و معاینه فنی را از «ثبت رویداد ← مدرک» وارد کنید.</div>'})()}
@@ -858,15 +1081,17 @@ function vResearch(){
    <div class="foot"><span>به‌روزرسانی: ${fmtStamp(r.updatedAt)}</span></div></article>`).join(''):'<div class="empty">هنوز منبعی ثبت نشده است.</div>'}</div>`}
 
 /* ---- prefs ---- */
-const VF=[['brand','برند'],['model','مدل'],['short','نام کوتاه'],['chassis','کد شاسی/نسل'],['year','سال ساخت','number'],['fuel','نوع سوخت','fuel'],['gearbox','گیربکس'],['market','بازار'],['plate','پلاک'],['vin','VIN'],['purchaseDate','تاریخ خرید','date'],['purchaseKm','کیلومتر هنگام خرید','number']];
-function vehForm(v,p){return `<div class="fgrid">${VF.map(([k,l,t])=>`<div class="field"><label for="${p}-${k}">${l}</label>${t==='fuel'?`<select id="${p}-${k}">${['',...FUELS].map(o=>`<option ${v[k]===o?'selected':''} value="${o}">${o||'—'}</option>`).join('')}</select>`:`<input id="${p}-${k}" type="${t||'text'}" value="${esc(v[k]??'')}">`}</div>`).join('')}
+const VF=[['brand','برند'],['model','مدل'],['short','نام کوتاه'],['chassis','کد شاسی/نسل'],['year','سال ساخت','number'],['fuel','نوع سوخت','fuel'],['gearbox','گیربکس'],['steering','فرمان','steer'],['market','بازار'],['plateCountry','کشور پلاک','pcountry'],['plate','پلاک'],['vin','VIN'],['purchaseDate','تاریخ خرید','date'],['purchaseKm','کیلومتر هنگام خرید','number']];
+function vehForm(v,p){return `<div class="fgrid">${VF.map(([k,l,t])=>`<div class="field"><label for="${p}-${k}">${l}</label>${t==='fuel'?`<select id="${p}-${k}">${['',...FUELS].map(o=>`<option ${v[k]===o?'selected':''} value="${o}">${o||'—'}</option>`).join('')}</select>`:t==='steer'?`<select id="${p}-${k}">${[['','—'],['left','چپ'],['right','راست']].map(([o,n])=>`<option ${(v[k]||'')===o?'selected':''} value="${o}">${n}</option>`).join('')}</select>`:t==='pcountry'?`<select id="${p}-${k}"><option value="">مثل کشور اپ (${esc(COUNTRIES[country()].name)})</option>${Object.entries(COUNTRIES).map(([o,c])=>`<option ${v[k]===o?'selected':''} value="${o}">${esc(c.name)}</option>`).join('')}</select>`:`<input id="${p}-${k}" type="${t||'text'}" value="${esc(v[k]??'')}">`}</div>`).join('')}
   <div class="field wide"><label for="${p}-notes">یادداشت</label><textarea id="${p}-notes">${esc(v.notes||'')}</textarea></div>
   <div class="wide bar"><button class="btn primary" type="button" data-vsave="${p}">ذخیره</button><button class="btn" type="button" data-vcancel="1">انصراف</button></div></div>`}
 function vPrefs(){
   const s=S.settings||{};
   const listEditor=(key,title,items)=>`<section class="panel"><h3>${title}</h3><div class="checks">${items.map((x,i)=>`<label>${esc(x)} <button class="btn link" style="min-height:28px;font-size:1rem" data-ldel="${key}|${i}" aria-label="حذف ${esc(x)}">×</button></label>`).join('')}</div><div class="bar"><div class="field" style="flex:1"><label for="add-${key}">مورد جدید</label><input id="add-${key}" type="text"></div><button class="btn" type="button" data-ladd="${key}">افزودن</button></div></section>`;
-  return `<div class="view-head"><h2>تنظیمات</h2><p>تغییر واحد پول فقط برای ثبت‌های بعدی است و مبلغ‌های قبلی را تبدیل نمی‌کند.</p></div>
-  <section class="panel"><h3>نمایش</h3><div class="fgrid">
+  return `<div class="view-head"><h2>تنظیمات</h2><p>کشور، پیش‌فرض‌ها را تعیین می‌کند و هر کدام را جدا می‌توانید عوض کنید. تغییر واحد پول فقط برای ثبت‌های بعدی است و مبلغ‌های قبلی تبدیل نمی‌شوند.</p></div>
+  <section class="panel"><h3>منطقه و نمایش</h3><div class="fgrid">
+   <div class="field"><label for="p-country">کشور</label><select id="p-country">${Object.entries(COUNTRIES).map(([k,c])=>`<option value="${k}" ${country()===k?'selected':''}>${esc(c.name)}</option>`).join('')}</select><span class="hint">واحد پول، طرح پلاک و بازدیدهای فصلی را پیش‌فرض می‌کند.</span></div>
+   <div class="field"><label for="p-lang">زبان</label><select id="p-lang">${Object.entries(LANGS).map(([k,n])=>`<option value="${k}" ${k==='fa'?'selected':'disabled'}>${n}${k==='fa'?'':' (به‌زودی)'}</option>`).join('')}</select><span class="hint">انگلیسی و ترکی همراه نسخه فروشگاهی اضافه می‌شوند.</span></div>
    <div class="field"><label for="p-cal">تقویم</label><select id="p-cal"><option value="gregorian" ${s.calendar!=='persian'?'selected':''}>میلادی</option><option value="persian" ${s.calendar==='persian'?'selected':''}>شمسی</option></select></div>
    <div class="field"><label for="p-cur">واحد پول پیش‌فرض</label><select id="p-cur">${Object.keys(CUR).map(c=>`<option value="${c}" ${curDefault()===c?'selected':''}>${CUR[c]} (${c})</option>`).join('')}</select></div>
    <div class="wide bar"><button class="btn primary" type="button" id="p-save">ذخیره</button></div></div></section>
@@ -874,7 +1099,7 @@ function vPrefs(){
    ${S.vehEdit==='new'?`<section class="panel"><h3>خودروی جدید</h3>${vehForm({},'vnew')}</section>`:''}
    <div class="vgrid">${V().map(v=>`<article class="vcard${v.status==='archived'?' arch':''}">
     <div class="vhead"><div><div class="vname"><span class="dot" style="background:${vcol(v)}"></span><h3>${esc(vname(v))}</h3></div><div class="vmeta">${esc((v.brand||'')+' '+(v.model||''))}</div></div>${v.status==='archived'?'<span class="pill neutral">بایگانی</span>':'<span class="pill good">فعال</span>'}</div>
-    <dl class="small" style="margin:0;display:grid;grid-template-columns:auto 1fr;gap:4px 12px"><dt class="muted">مشخصات</dt><dd style="margin:0">${esc([v.year,v.chassis,v.fuel,v.gearbox,v.market].filter(Boolean).join(' · ')||'ثبت نشده')}</dd><dt class="muted">پلاک</dt><dd style="margin:0">${esc(v.plate||'ثبت نشده')}</dd><dt class="muted">VIN</dt><dd style="margin:0;overflow-wrap:anywhere">${esc(v.vin||'ثبت نشده')}</dd><dt class="muted">خرید</dt><dd style="margin:0">${v.purchaseDate?fmtDate(v.purchaseDate):'تاریخ ثبت نشده'}${v.purchaseKm!=null?' · '+fa(v.purchaseKm,1)+' کیلومتر':''}</dd>${v.notes?`<dt class="muted">یادداشت</dt><dd style="margin:0">${esc(v.notes)}</dd>`:''}</dl>
+    <dl class="small" style="margin:0;display:grid;grid-template-columns:auto 1fr;gap:4px 12px"><dt class="muted">مشخصات</dt><dd style="margin:0">${esc([v.year,v.chassis,v.fuel,v.gearbox,v.market].filter(Boolean).join(' · ')||'ثبت نشده')}</dd><dt class="muted">پلاک</dt><dd style="margin:0">${v.plate?plateHtml(v.plate,plateCountry(v)):'ثبت نشده'}</dd><dt class="muted">فرمان</dt><dd style="margin:0">${v.steering==='right'?'راست':v.steering==='left'?'چپ':'ثبت نشده'}</dd><dt class="muted">VIN</dt><dd style="margin:0;overflow-wrap:anywhere">${esc(v.vin||'ثبت نشده')}</dd><dt class="muted">خرید</dt><dd style="margin:0">${v.purchaseDate?fmtDate(v.purchaseDate):'تاریخ ثبت نشده'}${v.purchaseKm!=null?' · '+fa(v.purchaseKm,1)+' کیلومتر':''}</dd>${v.notes?`<dt class="muted">یادداشت</dt><dd style="margin:0">${esc(v.notes)}</dd>`:''}</dl>
     ${S.vehEdit===v.id?vehForm(v,'v-'+v.id):`<div class="bar"><button class="btn sm" data-vedit="${v.id}">ویرایش</button><button class="btn sm" data-varch="${v.id}">${v.status==='archived'?'فعال‌سازی':'بایگانی'}</button></div>`}
    </article>`).join('')}</div>
   </section>
@@ -953,23 +1178,42 @@ const main=$('#main');
 main.addEventListener('input',e=>{
   const t=e.target;
   if(t.id==='h-q'){S.hist.q=t.value;clearTimeout(main._q);main._q=setTimeout(()=>{render(true);const el=$('#h-q');if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length)}},250);return}
+  if(t.closest('.inline-edit')){S.editing=true;if(t.id&&t.id.startsWith('km-in-'))S.kmDraft=t.value;if(t.id&&t.id.startsWith('pl-in-'))S.plateDraft=t.value;return}
   if(S.route==='add'){S.editing=true;liveHints();const box=$('#issues');if(box&&box.innerHTML)box.innerHTML='';return}
   if(t.closest('.fgrid')||t.id==='doc-warn'||t.id&&t.id.startsWith('add-'))S.editing=true});
 main.addEventListener('change',e=>{
   const t=e.target,id=t.id;
   if(id==='bk-file'){onBackupFile(t);return}
+  if(t.dataset&&t.dataset.season){const [vid,cid]=t.dataset.season.split('|');seasonToggle(vid,cid,t.checked);return}
+  if(t.dataset&&t.dataset.snext){const r=S.rules[t.dataset.snext];const st=r&&ruleStatus(r);if(st&&st.last&&t.value)patch('rules/'+r.id,{dueOverride:{after:st.last.id,date:t.value}},'تاریخ بعدی ذخیره شد');return}
+  if(id==='p-country'){const c=COUNTRIES[t.value];if(c&&c.cur){const sel=$('#p-cur');if(sel)sel.value=c.cur}return}
   if(id==='dash-arch'){S.dashArch=t.checked;render(true)}
   else if(['h-veh','h-type','h-from','h-to'].includes(id)){S.hist[id.slice(2)]=t.value;render(true)}
   else if(id==='r-veh'){S.rep.veh=t.value;render(true)}
   else if(id==='r-from'||id==='r-to'){S.rep[id.slice(2)]=t.value;render(true)}
   else if(id==='f-vehicleId')liveHints()});
+main.addEventListener('keydown',e=>{const t=e.target;if(e.key!=='Enter'||!t.id)return;if(t.id.startsWith('km-in-')){e.preventDefault();saveKm(t.id.slice(6),false)}else if(t.id.startsWith('pl-in-')){e.preventDefault();savePlate(t.id.slice(6))}});
 main.addEventListener('submit',e=>{if(e.target.id==='evform'){e.preventDefault();saveEvent(false)}});
 main.addEventListener('click',async e=>{
+  const mk=e.target.closest('[data-ci]');if(mk&&mk.closest('.chart')){const i=+mk.dataset.ci;S.rep.sel=S.rep.sel===i?null:i;render(true);return}
   const b=e.target.closest('button,a[data-preset]');if(!b)return;const d=b.dataset;
   if(d.dv){S.dashVeh=d.dv;render(true);return}
   if(b.id==='bk-export'){exportBackup();return}
   if(b.id==='bk-cancel'){S.restore=null;render(true);return}
   if(b.id==='bk-apply'){const r=S.restore;S.restore=null;if(window.__localStore&&window.__localStore.replace(r.data)){toast('داده‌ها بازیابی شد');location.hash='#dashboard'}else toast('بازیابی انجام نشد؛ فضای ذخیره‌سازی گوشی پر است.','bad');render(true);return}
+  if(d.fuel){openFuel(d.fuel);return}
+  if(d.metric){S.rep.metric=d.metric;S.rep.sel=null;render(true);return}
+  if(d.ctype&&!b.disabled){S.rep.ctype=d.ctype;S.rep.sel=null;render(true);return}
+  if(d.sveh){S.svcVeh=d.sveh;render(true);return}
+  if(d.sdone){const [vid,cid]=d.sdone.split('|');seasonDone(vid,cid);return}
+  if(d.kmedit){S.kmEdit=d.kmedit;S.kmDraft=null;S.kmIssue=null;S.plateEdit=null;S.editing=false;render(true);const el=$('#km-in-'+d.kmedit);if(el)el.focus();return}
+  if(d.kmcancel){S.kmEdit=null;S.kmDraft=null;S.kmIssue=null;S.editing=false;render(true);return}
+  if(d.kmsave){saveKm(d.kmsave,false);return}
+  if(d.kmforce){saveKm(d.kmforce,true);return}
+  if(d.kmfix){const id=S.kmEdit;S.kmIssue=null;render(true);const el=$('#km-in-'+id);if(el)el.focus();return}
+  if(d.pledit){S.plateEdit=d.pledit;S.plateDraft=null;S.kmEdit=null;S.editing=false;render(true);const el=$('#pl-in-'+d.pledit);if(el)el.focus();return}
+  if(d.plcancel){S.plateEdit=null;S.plateDraft=null;S.editing=false;render(true);return}
+  if(d.plsave){savePlate(d.plsave);return}
   if(d.type){S.form.type=d.type;S.form.draft={vehicleId:($('#f-vehicleId')||{}).value};S.editing=false;render(true);return}
   if(b.id==='ev-force'){saveEvent(true);return}
   if(b.id==='ev-fix'){$('#issues').innerHTML='';const k=$('#f-km')||$('#f-date');if(k)k.focus();return}
@@ -1004,7 +1248,7 @@ main.addEventListener('click',async e=>{
     render(true);return}
   if(b.id==='doc-warn-save'){const x=$('#doc-warn').value;const s=clone(S.settings);s.docWarnDays=x===''?null:Number(x);S.editing=false;await put('meta/settings',s);return}
   if(d.rs){await patch('research/'+d.rs,{status:d.st},d.st==='confirmed'?'منبع تأیید شد':d.st==='rejected'?'منبع رد شد':'وضعیت بازگشت');return}
-  if(b.id==='p-save'){const s=clone(S.settings);s.calendar=$('#p-cal').value;s.currency=$('#p-cur').value;S.editing=false;await put('meta/settings',s);return}
+  if(b.id==='p-save'){const s=clone(S.settings);s.country=$('#p-country').value;s.calendar=$('#p-cal').value;s.currency=$('#p-cur').value;S.editing=false;await put('meta/settings',s);return}
   if(d.ldel){const [k,i]=d.ldel.split('|');const s=clone(S.settings);s[k].splice(+i,1);await put('meta/settings',s,'حذف شد');return}
   if(d.ladd){const k=d.ladd;const x=$('#add-'+k).value.trim();if(!x)return;const s=clone(S.settings);s[k]=s[k]||[];if(s[k].includes(x)){toast('این مورد وجود دارد.');return}s[k].push(x);S.editing=false;await put('meta/settings',s,'اضافه شد');return}
   if(b.id==='veh-add'){S.vehEdit=S.vehEdit==='new'?null:'new';S.editing=false;render(true);return}
